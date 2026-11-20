@@ -230,6 +230,10 @@ export const api = {
   downloadTasks: () => get<DownloadTask[]>("/api/downloads/tasks"),
   cancelDownload: (id: string) =>
     post<{ ok: boolean }>(`/api/downloads/${encodeURIComponent(id)}/cancel`),
+  retryDownload: (id: string) =>
+    post<{ ok: boolean }>(`/api/downloads/${encodeURIComponent(id)}/retry`),
+  deleteDownloadTask: (id: string) =>
+    request<{ ok: boolean }>("DELETE", `/api/downloads/${encodeURIComponent(id)}`),
   clearCompletedDownloads: () => request<{ ok: boolean }>("DELETE", "/api/downloads/tasks"),
   getStorageStatus: () => get<StorageStatus>("/api/storage/status"),
   testJellyfin: (req: { url: string; apiKey: string }) =>

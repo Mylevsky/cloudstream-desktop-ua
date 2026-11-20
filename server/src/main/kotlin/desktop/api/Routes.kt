@@ -459,6 +459,14 @@ fun Route.apiRoutes(s: Services) {
                 val id = call.parameters["id"]!!
                 call.respond(mapOf("ok" to s.downloads.cancel(id)))
             }
+            post("/{id}/retry") {
+                val id = call.parameters["id"]!!
+                call.respond(mapOf("ok" to s.downloads.retry(id)))
+            }
+            delete("/{id}") {
+                val id = call.parameters["id"]!!
+                call.respond(mapOf("ok" to s.downloads.deleteTaskFile(id)))
+            }
             delete("/tasks") {
                 s.downloads.clearCompleted()
                 call.respond(mapOf("ok" to true))

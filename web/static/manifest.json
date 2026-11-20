@@ -1,13 +1,15 @@
 {
   "id": "/",
-  "name": "Cloudstream",
-  "short_name": "Cloudstream",
-  "description": "Browse and play your Cloudstream library.",
+  "name": "Cloudstream Desktop UA",
+  "short_name": "Cloudstream UA",
+  "description": "Український медіацентр для перегляду та завантаження фільмів і серіалів на домашній сервер Jellyfin.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0e0f13",
   "theme_color": "#0e0f13",
+  "lang": "uk",
+  "categories": ["entertainment", "video"],
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

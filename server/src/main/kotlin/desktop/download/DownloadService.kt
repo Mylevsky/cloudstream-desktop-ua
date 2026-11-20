@@ -472,4 +472,34 @@ class DownloadService(
         val toRemove = allTasks.filter { (_, t) -> t.status in setOf("completed", "failed", "cancelled") }.keys
         toRemove.forEach { allTasks.remove(it) }
     }
+
+    fun retry(id: String): Boolean {
+        val task = allTasks[id] ?: return false
+        if (task.status in setOf("failed", "cancelled")) {
+            task.status = "queued"
+            task.progress = 0.0
+            task.speed = null
+            task.eta = null
+            task.error = null
+            queue.add(task)
+            log.info("Retrying download task $id: ${task.title}")
+            return true
+        }
+        return false
+    }
+
+    fun deleteTaskFile(id: String): Boolean {
+        val task = allTasks.remove(id) ?: return false
+        task.process?.destroy()
+        queue.remove(task)
+        val path = task.filePath
+        if (path != null) {
+            val f = File(path)
+            if (f.exists()) {
+                f.delete()
+                log.info("Deleted downloaded file for task $id: $path")
+            }
+        }
+        return true
+    }
 }

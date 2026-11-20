@@ -4,6 +4,7 @@
   import { toasts } from "#lib/toast.svelte";
   import type { DownloadTask } from "#lib/types";
   import {
+    Bell,
     CheckCircle2,
     Clock,
     Download,
@@ -11,6 +12,7 @@
     HardDrive,
     Loader2,
     RefreshCw,
+    RotateCcw,
     Trash2,
     XCircle,
   } from "@lucide/svelte";
@@ -70,6 +72,56 @@
     }
   }
 
+  let notifPermission = $state(
+    typeof Notification !== "undefined" ? Notification.permission : "denied",
+  );
+  let completedSet = new Set<string>();
+
+  $effect(() => {
+    for (const t of tasks) {
+      if (t.status === "completed" && !completedSet.has(t.id)) {
+        completedSet.add(t.id);
+        if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+          try {
+            new Notification("🎬 Завантаження завершено!", {
+              body: `"${t.title}" (${formatEp(t)}) успішно збережено для Jellyfin.`,
+              icon: "/favicon.svg",
+            });
+          } catch {}
+        }
+      }
+    }
+  });
+
+  async function requestNotificationPermission() {
+    if (typeof Notification === "undefined") return;
+    const res = await Notification.requestPermission();
+    notifPermission = res;
+    if (res === "granted") {
+      toasts.show("Сповіщення у браузері увімкнено! 🔔");
+    }
+  }
+
+  async function retryTask(id: string) {
+    try {
+      await api.retryDownload(id);
+      toasts.show("Завдання відновлено у черзі 🔄");
+      await client.invalidateQueries({ queryKey: ["downloads"] });
+    } catch (e) {
+      toasts.error(e);
+    }
+  }
+
+  async function deleteTask(id: string) {
+    try {
+      await api.deleteDownloadTask(id);
+      toasts.show("Завдання видалено");
+      await client.invalidateQueries({ queryKey: ["downloads"] });
+    } catch (e) {
+      toasts.error(e);
+    }
+  }
+
   function formatEp(t: DownloadTask): string {
     if (t.kind === "movie") return "Фільм";
     const s = t.season != null ? `S${String(t.season).padStart(2, "0")}` : "S01";
@@ -107,6 +159,17 @@
           <HardDrive size={15} strokeWidth={2} aria-hidden="true" />
           <span>{formatBytes(storageQuery.data.usableSpaceBytes)} вільно</span>
         </a>
+      {/if}
+
+      {#if notifPermission === "default"}
+        <button
+          class="btn secondary notif-btn"
+          onclick={requestNotificationPermission}
+          title="Отримувати сповіщення у браузері, коли файл завантажиться"
+        >
+          <Bell size={15} strokeWidth={2} aria-hidden="true" />
+          <span>Увімкнути сповіщення</span>
+        </button>
       {/if}
 
       {#if tasks.some((t) => t.status === "completed" || t.status === "failed" || t.status === "cancelled")}
@@ -207,6 +270,30 @@
                   title="Скасувати завантаження"
                 >
                   Скасувати
+                </button>
+              {:else if task.status === "failed" || task.status === "cancelled"}
+                <button
+                  class="btn retry-btn"
+                  onclick={() => retryTask(task.id)}
+                  title="Спробувати завантажити знову"
+                >
+                  <RotateCcw size={14} strokeWidth={2} aria-hidden="true" />
+                  <span>Повторити</span>
+                </button>
+                <button
+                  class="btn icon-only"
+                  onclick={() => deleteTask(task.id)}
+                  title="Видалити завдання"
+                >
+                  <Trash2 size={15} strokeWidth={1.8} aria-hidden="true" />
+                </button>
+              {:else if task.status === "completed"}
+                <button
+                  class="btn icon-only"
+                  onclick={() => deleteTask(task.id)}
+                  title="Видалити запис про завантаження"
+                >
+                  <Trash2 size={15} strokeWidth={1.8} aria-hidden="true" />
                 </button>
               {/if}
             </div>
@@ -445,6 +532,28 @@
   .cancel-btn:hover {
     background: #7f1d1d33;
     border-color: #f8717155;
+  }
+  .retry-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+    color: #60a5fa;
+  }
+  .retry-btn:hover {
+    background: #1e3a8a33;
+    border-color: #60a5fa55;
+  }
+  .notif-btn {
+    color: #f59e0b;
+    border-color: #f59e0b44;
+  }
+  .notif-btn:hover {
+    background: #f59e0b1a;
+    border-color: #f59e0b88;
+  }
+  .task-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .progress-track {
     width: 100%;
