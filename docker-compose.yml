@@ -2,22 +2,30 @@ services:
   cloudstream:
     build: .
     environment:
-      # Your own timezone (e.g. Asia/Manila). Cloudflare compares the browser's timezone with your IP's location, and
-      # a container defaults to UTC, which fails the check for most users.
-      TZ: ${TZ:-UTC}
-      # The browser's language and Accept-Language; match your region if sites expect it (e.g. en_PH:en).
-      LANGUAGE: ${LANGUAGE:-en_US:en}
+      # Your own timezone (e.g. Europe/Kyiv). Cloudflare compares the browser's timezone with your IP's location.
+      TZ: ${TZ:-Europe/Kyiv}
+      # The browser's language and Accept-Language.
+      LANGUAGE: ${LANGUAGE:-uk_UA:uk:en_US:en}
       # Optional: sign in through the authentication Worker instead of this server (see auth-worker/README.md).
       # Unset, the first sign-in link is printed in `docker logs`.
       CLOUDSTREAM_AUTH_URL: ${CLOUDSTREAM_AUTH_URL:-}
       CLOUDSTREAM_AUTH_SECRET: ${CLOUDSTREAM_AUTH_SECRET:-}
       CLOUDSTREAM_SERVER_NAME: ${CLOUDSTREAM_SERVER_NAME:-Cloudstream server}
       CLOUDSTREAM_PUBLIC_ORIGIN: ${CLOUDSTREAM_PUBLIC_ORIGIN:-}
+      # Paths for Jellyfin media storage
+      MOVIES_PATH: /data/Media/Movies
+      SHOWS_PATH: /data/Media/Shows
+      # Optional Jellyfin integration for automatic library refresh
+      JELLYFIN_URL: ${JELLYFIN_URL:-}
+      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY:-}
     ports:
       - "6969:6969"
     volumes:
       - config:/config
       - data:/data
+      # External HDD mounts for Jellyfin
+      - ${HOST_MOVIES_PATH:-/data/Media/Movies}:/data/Media/Movies
+      - ${HOST_SHOWS_PATH:-/data/Media/Shows}:/data/Media/Shows
     restart: unless-stopped
 
 volumes:

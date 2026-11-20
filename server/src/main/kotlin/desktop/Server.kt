@@ -62,8 +62,10 @@ fun serve(config: Config, db: Database, settings: Settings, host: PluginHost, sc
         override suspend fun play(req: PlayRequest) = playback.play(req)
         override suspend fun command(cmd: String, body: PlayerCommand) = playback.command(cmd, body)
     })
+    val clientStreams = ClientStreams(links, proxy)
+    val downloads = desktop.download.DownloadService(scope, catalog, links, clientStreams, config.bindPort)
     val services = Services(host, catalog, links, proxy, playback, store, settings, auth, scope, config.bindPort, config.devPath,
-        ClientStreams(links, proxy), skipTimes, cast)
+        clientStreams, skipTimes, cast, downloads)
 
     // Plugins build and load in the background; the UI shows progress through /api/status.
     scope.launch { host.start(scope) }

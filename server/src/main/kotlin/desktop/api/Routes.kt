@@ -58,6 +58,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.io.File
 import java.io.Writer
+import desktop.download.DownloadService
 
 class Services(
     val host: PluginHost,
@@ -74,6 +75,7 @@ class Services(
     val clientStreams: ClientStreams,
     val skipTimes: SkipTimes,
     val cast: DeviceHub,
+    val downloads: DownloadService,
 )
 
 @Serializable
@@ -440,6 +442,27 @@ fun Route.apiRoutes(s: Services) {
                 DesktopContext.prefs(file).replaceAll(values)
             }
             call.respond(pluginSettings(s, name))
+        }
+        route("/downloads") {
+            post {
+                val req = call.receive<DownloadRequest>()
+                call.respond(s.downloads.queue(req))
+            }
+            post("/season") {
+                val req = call.receive<SeasonDownloadRequest>()
+                call.respond(s.downloads.queueSeason(req))
+            }
+            get("/tasks") {
+                call.respond(s.downloads.tasks())
+            }
+            post("/{id}/cancel") {
+                val id = call.parameters["id"]!!
+                call.respond(mapOf("ok" to s.downloads.cancel(id)))
+            }
+            delete("/tasks") {
+                s.downloads.clearCompleted()
+                call.respond(mapOf("ok" to true))
+            }
         }
     }
 }

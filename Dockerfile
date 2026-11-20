@@ -50,8 +50,10 @@ ARG BROWSER_REFRESH=
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        ca-certificates curl tini tzdata xvfb \
+        ca-certificates curl tini tzdata xvfb ffmpeg python3 \
         fonts-liberation fonts-dejavu-core fonts-noto-core fonts-noto-color-emoji; \
+    curl -fsSLo /usr/local/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp; \
+    chmod a+rx /usr/local/bin/yt-dlp; \
     if [ "$BROWSER" = chrome ] && [ "$TARGETARCH" = amd64 ]; then \
         curl -fsSLo /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb; \
         apt-get install -y --no-install-recommends /tmp/chrome.deb; \

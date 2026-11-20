@@ -445,3 +445,36 @@ export interface EmbeddedSubs {
   tracks?: EmbeddedTrack[] | null;
   cues: EmbeddedCue[];
 }
+
+export interface DownloadRequest {
+  provider: string;
+  title: string;
+  year?: number | null;
+  kind?: string;
+  season?: number | null;
+  episode?: number | null;
+  episodeName?: string | null;
+  data: string;
+}
+
+export interface SeasonDownloadRequest {
+  provider: string;
+  url: string;
+  season: number;
+}
+
+export interface DownloadTask {
+  id: string;
+  title: string;
+  kind: string;
+  season?: number | null;
+  episode?: number | null;
+  episodeName?: string | null;
+  status: "queued" | "resolving" | "downloading" | "completed" | "failed" | "cancelled";
+  progress: number;
+  speed?: string | null;
+  eta?: string | null;
+  filePath?: string | null;
+  error?: string | null;
+  addedAt: number;
+}

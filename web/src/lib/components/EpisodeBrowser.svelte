@@ -6,6 +6,7 @@
     ChevronRight,
     CircleCheck,
     Clock3,
+    Download,
     ListVideo,
     Play,
     Search,
@@ -23,6 +24,8 @@
     onwatched,
     isPlaying,
     audio,
+    ondownload,
+    ondownloadseason,
   }: {
     episodes: Episode[];
     seasons: Details["seasons"];
@@ -31,6 +34,8 @@
     onwatched: (episode: Episode) => void;
     isPlaying: (data: string) => boolean;
     audio?: Snippet<[resetFilters: () => void]>;
+    ondownload?: (episode: Episode) => void;
+    ondownloadseason?: (season: number) => void;
   } = $props();
 
   const PAGE_SIZE = 20;
@@ -226,11 +231,23 @@
   </div>
 
   <div class="list-heading">
-    <span aria-live="polite"
-      >{query
-        ? `${filtered.length} matching episode${filtered.length === 1 ? "" : "s"}`
-        : seasonName(activeSeason)}</span
-    >
+    <div class="heading-left">
+      <span aria-live="polite"
+        >{query
+          ? `${filtered.length} matching episode${filtered.length === 1 ? "" : "s"}`
+          : seasonName(activeSeason)}</span
+      >
+      {#if ondownloadseason && !query && inSeason.length > 0}
+        <button
+          class="dl-season-btn"
+          onclick={() => ondownloadseason(activeSeason)}
+          title="Download entire season for Jellyfin"
+        >
+          <Download size={14} strokeWidth={1.8} aria-hidden="true" />
+          Download Season
+        </button>
+      {/if}
+    </div>
     {#if filtered.length > PAGE_SIZE}{@render pagination()}{/if}
   </div>
 
@@ -291,6 +308,16 @@
               {#if e.description}<span class="episode-description">{e.description}</span>{/if}
             </span>
           </button>
+          {#if ondownload}
+            <button
+              class="dl-btn"
+              onclick={() => ondownload(e)}
+              aria-label="Download {e.name ?? `Episode ${e.episode ?? index + 1}`}"
+              title="Download episode for Jellyfin"
+            >
+              <Download size={18} strokeWidth={1.8} aria-hidden="true" />
+            </button>
+          {/if}
           <button
             class="mark"
             onclick={() => onwatched(e)}
@@ -706,5 +733,50 @@
     .list-footer {
       flex-wrap: wrap;
     }
+  }
+  .heading-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .dl-season-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--accent);
+    cursor: pointer;
+    transition:
+      background 150ms,
+      border-color 150ms;
+  }
+  .dl-season-btn:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .dl-btn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition:
+      color 150ms,
+      background 150ms;
+  }
+  .dl-btn:hover {
+    color: var(--accent);
+    background: var(--surface-2);
   }
 </style>

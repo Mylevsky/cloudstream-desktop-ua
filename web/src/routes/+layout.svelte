@@ -18,6 +18,7 @@
   import {
     CircleAlert,
     CircleCheck,
+    Download,
     House,
     Library,
     Play,
@@ -78,6 +79,7 @@
     { href: "/", label: "Home", icon: House },
     { href: "/search", label: "Search", icon: Search },
     { href: "/library", label: "Library", icon: Library },
+    { href: "/downloads", label: "Downloads", icon: Download },
     { href: "/settings", label: "Settings", icon: Settings2 },
   ];
 

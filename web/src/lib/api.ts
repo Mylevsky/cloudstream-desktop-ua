@@ -5,6 +5,8 @@ import type {
   ContinueEntry,
   Details,
   DeviceInfo,
+  DownloadRequest,
+  DownloadTask,
   HistoryEntry,
   HomePage,
   HomeSection,
@@ -17,6 +19,7 @@ import type {
   ProgressRequest,
   Provider,
   SearchItem,
+  SeasonDownloadRequest,
   Settings,
   SkipRange,
   Status,
@@ -219,6 +222,13 @@ export const api = {
       `/api/plugins/${encodeURIComponent(name)}/settings`,
       { files },
     ),
+  queueDownload: (req: DownloadRequest) => post<DownloadTask>("/api/downloads", req),
+  queueSeasonDownload: (req: SeasonDownloadRequest) =>
+    post<DownloadTask[]>("/api/downloads/season", req),
+  downloadTasks: () => get<DownloadTask[]>("/api/downloads/tasks"),
+  cancelDownload: (id: string) =>
+    post<{ ok: boolean }>(`/api/downloads/${encodeURIComponent(id)}/cancel`),
+  clearCompletedDownloads: () => request<{ ok: boolean }>("DELETE", "/api/downloads/tasks"),
 };
 
 /** Streams search results provider by provider. Returns a function that stops the stream. */

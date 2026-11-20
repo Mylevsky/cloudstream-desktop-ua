@@ -14,6 +14,7 @@
     Bookmark,
     Captions,
     ChevronDown,
+    Download,
     ExternalLink,
     Film,
     Play,
@@ -83,6 +84,53 @@
     if (!d) return;
     await api.setWatched(d.provider, d.url, e.data, !e.progress?.watched).catch(toasts.error);
     client.invalidateQueries({ queryKey: ["details", provider, url] });
+  }
+
+  async function downloadMovie(det: Details) {
+    if (!det.movieData) return;
+    try {
+      await api.queueDownload({
+        provider: det.provider,
+        title: det.name,
+        year: det.year,
+        kind: "movie",
+        data: det.movieData,
+      });
+      toasts.show(`Added "${det.name}" to Downloads 📥`);
+    } catch (e) {
+      toasts.error(e);
+    }
+  }
+
+  async function downloadEpisode(det: Details, ep: Episode) {
+    try {
+      await api.queueDownload({
+        provider: det.provider,
+        title: det.name,
+        year: det.year,
+        kind: "series",
+        season: ep.season ?? 1,
+        episode: ep.episode ?? 1,
+        episodeName: ep.name,
+        data: ep.data,
+      });
+      toasts.show(`Added S${ep.season ?? 1}E${ep.episode ?? 1} to Downloads 📥`);
+    } catch (e) {
+      toasts.error(e);
+    }
+  }
+
+  async function downloadSeason(det: Details, seasonNum: number) {
+    try {
+      const res = await api.queueSeasonDownload({
+        provider: det.provider,
+        url: det.url,
+        season: seasonNum,
+      });
+      toasts.show(`Queued Season ${seasonNum} (${res.length} episodes) for download 📥`);
+    } catch (e) {
+      toasts.error(e);
+    }
   }
 
   /** Some providers return plots with HTML in them; show them as text with line breaks. */
@@ -181,6 +229,14 @@
                   ? "Watch live"
                   : "Play"}
             </button>
+            <button
+              class="btn secondary"
+              onclick={() => downloadMovie(d)}
+              title="Download movie for Jellyfin"
+            >
+              <Download size={18} strokeWidth={1.8} aria-hidden="true" />
+              Download
+            </button>
           {:else if resumeEp}
             {@const i = byDub.indexOf(resumeEp)}
             <button
@@ -274,6 +330,8 @@
           onplay={(episode, index) => play(d, episode.data, episodeLabel(episode, index))}
           onwatched={toggleWatched}
           isPlaying={playing}
+          ondownload={(episode) => downloadEpisode(d, episode)}
+          ondownloadseason={(s) => downloadSeason(d, s)}
         >
           {#snippet audio(resetFilters: () => void)}
             {#if dubs.length > 1}

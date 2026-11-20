@@ -422,3 +422,40 @@ data class EmbeddedSubsDto(
     val tracks: List<EmbeddedTrackDto>? = null,
     val cues: List<EmbeddedCueDto> = emptyList(),
 )
+
+@Serializable
+data class DownloadRequest(
+    val provider: String,
+    val title: String,
+    val year: Int? = null,
+    val kind: String = "series",
+    val season: Int? = 1,
+    val episode: Int? = 1,
+    val episodeName: String? = null,
+    val data: String,
+)
+
+@Serializable
+data class SeasonDownloadRequest(
+    val provider: String,
+    val url: String,
+    val season: Int,
+)
+
+@Serializable
+data class DownloadTaskDto(
+    val id: String,
+    val title: String,
+    val kind: String,
+    val season: Int? = null,
+    val episode: Int? = null,
+    val episodeName: String? = null,
+    val status: String,
+    val progress: Double = 0.0,
+    val speed: String? = null,
+    val eta: String? = null,
+    val filePath: String? = null,
+    val error: String? = null,
+    val addedAt: Long = 0L,
+)
+
