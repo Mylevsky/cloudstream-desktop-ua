@@ -91,4 +91,4 @@ export function scrubPosition(from: number, fraction: number, duration: number):
 }
 
 export const skipName = (r: SkipRange) =>
-  ({ op: "opening", ed: "ending", recap: "recap" })[r.type] ?? "segment";
+  ({ op: "опенінг", ed: "ендінг", recap: "переказ" })[r.type] ?? "сегмент";

@@ -48,13 +48,13 @@
   }));
 </script>
 
-<svelte:head><title>Home · Cloudstream</title></svelte:head>
+<svelte:head><title>Головна · Cloudstream</title></svelte:head>
 
 <div class="page home">
   <div class="top">
     <div class="page-heading">
-      <h1 class="page-title">Home</h1>
-      <p>Your next watch starts here.</p>
+      <h1 class="page-title">Головна</h1>
+      <p>Ваш наступний перегляд починається тут.</p>
     </div>
     {#if current}
       <form class="browse-search" action="/search" role="search">
@@ -63,16 +63,16 @@
         <input
           type="search"
           name="q"
-          aria-label={`Search ${current.name}`}
-          placeholder={`Search ${current.name}`}
+          aria-label={`Пошук у ${current.name}`}
+          placeholder={`Пошук у ${current.name}...`}
           enterkeyhint="search"
           required
         />
-        <button type="submit" aria-label="Submit search">Search</button>
+        <button type="submit" aria-label="Шукати">Пошук</button>
       </form>
     {/if}
     {#if status.data?.building}<span class="building"
-        ><span class="spinner"></span> Building plugins…</span
+        ><span class="spinner"></span> Збірка плагінів…</span
       >{/if}
   </div>
 
@@ -80,18 +80,19 @@
     <LoadingSkeleton variant="home" />
   {:else if providers.isError}
     <div class="empty">
-      <p>Couldn't load sources: {providers.error.message}</p>
-      <button class="btn" onclick={() => providers.refetch()}>Try again</button>
+      <p>Не вдалося завантажити джерела: {providers.error.message}</p>
+      <button class="btn" onclick={() => providers.refetch()}>Спробувати знову</button>
     </div>
   {:else if !withHome.length}
     <div class="empty">
       <Layers size={32} strokeWidth={1.8} aria-hidden="true" />
-      <p>No providers loaded yet.</p>
+      <p>Провайдери ще не завантажені.</p>
       <p class="muted">
-        Plugins build in the background on first start. Check the plugin settings for errors.
+        При першому запуску плагіни збираються у фоні. Перевірте налаштування плагінів у разі
+        помилок.
       </p>
       <a class="btn" href="/settings"
-        ><Settings2 size={17} strokeWidth={1.8} aria-hidden="true" /> Open settings</a
+        ><Settings2 size={17} strokeWidth={1.8} aria-hidden="true" /> Відкрити налаштування</a
       >
     </div>
   {:else}
@@ -100,7 +101,7 @@
     </div>
 
     {#if continueQ.data?.length}
-      <HomeShelf title="Continue watching" description="Pick up where you left off.">
+      <HomeShelf title="Продовжити перегляд" description="Продовжуйте з того місця, де зупинилися.">
         {#each continueQ.data as c (c.provider + c.url)}
           <Poster
             provider={c.provider}
@@ -124,16 +125,16 @@
             <HomeRow provider={current.name} section={s} />
           {:else}
             <div class="empty">
-              <h2>No collections available</h2>
-              <p class="muted">Try another source to find something to watch.</p>
-              <button class="btn" onclick={() => sections.refetch()}>Refresh collections</button>
+              <h2>Колекції відсутні</h2>
+              <p class="muted">Спробуйте обрати інше джерело.</p>
+              <button class="btn" onclick={() => sections.refetch()}>Оновити колекції</button>
             </div>
           {/each}
         {:else if sections.isError}
           <div class="empty">
-            <h2>Couldn’t load collections</h2>
+            <h2>Не вдалося завантажити колекції</h2>
             <p class="muted">{sections.error?.message}</p>
-            <button class="btn" onclick={() => sections.refetch()}>Try again</button>
+            <button class="btn" onclick={() => sections.refetch()}>Спробувати знову</button>
           </div>
         {:else}
           <LoadingSkeleton variant="home" showProviders={false} />

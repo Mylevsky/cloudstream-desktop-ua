@@ -13,7 +13,7 @@
 
   const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
   const title = $derived(
-    { quality: "Video quality", tracks: "Audio & subtitles", speed: "Speed", episodes: "Episodes" }[
+    { quality: "Якість відео", tracks: "Аудіо та субтитри", speed: "Швидкість", episodes: "Серії" }[
       panel
     ],
   );
@@ -28,7 +28,7 @@
 <div class="panel" role="dialog" aria-label={title} tabindex="-1">
   <header>
     <h2>{title}</h2>
-    <button class="close" onclick={onclose} aria-label="Close"
+    <button class="close" onclick={onclose} aria-label="Закрити"
       ><X size={20} strokeWidth={1.8} aria-hidden="true" /></button
     >
   </header>
@@ -39,7 +39,7 @@
         aria-pressed={p.level < 0}
         onclick={() => p.setLevel(-1)}
       >
-        <span>Auto</span>{#if p.level < 0}<Check size={18} aria-hidden="true" />{/if}
+        <span>Авто</span>{#if p.level < 0}<Check size={18} aria-hidden="true" />{/if}
       </button>
       {#each p.levels as l (l.id)}
         <button
@@ -52,23 +52,23 @@
       {/each}
     {:else if panel === "tracks"}
       {#if p.audioTracks.length > 1}
-        <h3>Audio</h3>
+        <h3>Аудіо</h3>
         {#each p.audioTracks as a (a.id)}
           <button class={["row", { on: a.selected }]} onclick={() => p.setAudio(a.id)}>
             <span>{a.label}</span>{#if a.selected}<Check size={18} aria-hidden="true" />{/if}
           </button>
         {/each}
       {/if}
-      <h3>Subtitles</h3>
+      <h3>Субтитри</h3>
       <button class={["row", { on: noSubs }]} onclick={() => p.subtitlesOffNow()}>
-        <span>Off</span>{#if noSubs}<Check size={18} aria-hidden="true" />{/if}
+        <span>Вимкнено</span>{#if noSubs}<Check size={18} aria-hidden="true" />{/if}
       </button>
       {#each p.embeddedSubs as e (e.id)}
         <button
           class={["row", { on: p.embeddedSub === e.id }]}
           onclick={() => p.selectEmbedded(e.id)}
         >
-          <span>{e.label} <small>in stream</small></span>{#if p.embeddedSub === e.id}<Check
+          <span>{e.label} <small>у потоці</small></span>{#if p.embeddedSub === e.id}<Check
               size={18}
               aria-hidden="true"
             />{/if}
@@ -78,20 +78,20 @@
         <button class={["row", { on: p.subtitle === s.id }]} onclick={() => p.selectSubtitle(s)}>
           <span
             >{s.lang}
-            {#if s.format === "ttml"}<small>not supported here</small
-              >{:else if !loaded.has(s.id)}<small>loads on select</small>{/if}</span
+            {#if s.format === "ttml"}<small>не підтримується</small
+              >{:else if !loaded.has(s.id)}<small>завантажується при виборі</small>{/if}</span
           >{#if p.subtitle === s.id}<Check size={18} aria-hidden="true" />{/if}
         </button>
       {/each}
       {#if !sources.subtitles.length && !p.embeddedSubs.length}
         <p class="muted">
-          {sources.done ? "No subtitles for this episode." : "Looking for subtitles…"}
+          {sources.done ? "Немає субтитрів для цієї серії." : "Пошук субтитрів…"}
         </p>
       {/if}
     {:else if panel === "speed"}
       {#each SPEEDS as s (s)}
         <button class={["row", { on: p.rate === s }]} onclick={() => p.setRate(s)}>
-          <span>{s === 1 ? "Normal" : `${s}×`}</span>{#if p.rate === s}<Check
+          <span>{s === 1 ? "Звичайна" : `${s}×`}</span>{#if p.rate === s}<Check
               size={18}
               aria-hidden="true"
             />{/if}
@@ -113,12 +113,12 @@
         >
           <span class="ep-text">
             <span>{episodeLabel(e, i)}</span>
-            {#if prog?.watched}<small>Watched</small>{:else if prog && prog.duration > 0}<span
+            {#if prog?.watched}<small>Переглянуто</small>{:else if prog && prog.duration > 0}<span
                 class="bar"
                 ><span style:width="{(prog.position / prog.duration) * 100}%"></span></span
               >{/if}
           </span>
-          {#if now}<small class="playing">Playing</small>{/if}
+          {#if now}<small class="playing">Зараз грає</small>{/if}
         </button>
       {/each}
     {/if}

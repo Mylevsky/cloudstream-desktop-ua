@@ -28,25 +28,25 @@
   const busy = $derived(s.status === "resolving");
   const playbackText = $derived(
     busy
-      ? "Loading"
+      ? "Завантаження"
       : s.status === "error"
-        ? "Playback error"
+        ? "Помилка відтворення"
         : s.status === "idle"
-          ? "Stopped"
+          ? "Зупинено"
           : s.paused
-            ? "Paused"
-            : "Playing",
+            ? "Пауза"
+            : "Відтворення",
   );
   const statusText = $derived(
     !player.connected
-      ? "Device disconnected"
+      ? "Пристрій відключено"
       : isMpv
         ? s.mpvRunning
-          ? `${playbackText} in mpv`
-          : "mpv is closed"
+          ? `${playbackText} у mpv`
+          : "mpv закрито"
         : info
-          ? `${playbackText} on ${info.name}`
-          : "Device disconnected",
+          ? `${playbackText} на ${info.name}`
+          : "Пристрій відключено",
   );
   const available = $derived(online && player.connected);
   const canControl = $derived(available && !busy);
@@ -87,22 +87,22 @@
   const nextText = $derived.by(() => {
     const n = s.next;
     if (!n) return null;
-    const label = n.label ?? "next episode";
-    const links = `${n.links} link${n.links === 1 ? "" : "s"}`;
+    const label = n.label ?? "наступна серія";
+    const links = `${n.links} ${n.links === 1 ? "посилання" : "посилань"}`;
     switch (n.status) {
       case "waiting":
         return null;
       case "resolving":
-        return `Next: ${label} · finding links${n.links ? ` (${links} so far)` : "…"}`;
+        return `Далі: ${label} · пошук посилань${n.links ? ` (${links})` : "…"}`;
       case "ready":
-        return `Next: ${label} · ${links} ready`;
+        return `Далі: ${label} · ${links} готово`;
       case "failed":
-        return `Next: ${label} · no links found`;
+        return `Далі: ${label} · посилань не знайдено`;
     }
   });
 
   const skipLabel = $derived(
-    s.skip ? `Skip ${{ op: "opening", ed: "ending", recap: "recap" }[s.skip.type]}` : null,
+    s.skip ? `Пропустити ${{ op: "опенінг", ed: "ендінг", recap: "переказ" }[s.skip.type]}` : null,
   );
 
   function trackLabel(t: {
@@ -111,20 +111,20 @@
     lang: string | null;
     external: boolean;
   }) {
-    return [t.lang?.toUpperCase(), t.title].filter(Boolean).join(" · ") || `Track ${t.id}`;
+    return [t.lang?.toUpperCase(), t.title].filter(Boolean).join(" · ") || `Доріжка ${t.id}`;
   }
 </script>
 
 {#if player.active}
   <div class={["bar", { hidden: player.expanded }]}>
     <div class="line"><div style="width: {pct}%"></div></div>
-    <button class="info" onclick={() => (player.expanded = true)} aria-label="Open remote">
+    <button class="info" onclick={() => (player.expanded = true)} aria-label="Відкрити пульт">
       {#if s.poster}<img src={s.poster} alt="" referrerpolicy="no-referrer" />{/if}
       <div class="text">
         <div class="title">{s.title}</div>
         <div class="sub">
           {#if busy || s.status === "error"}
-            <span class={{ err: s.status === "error" }}>{s.message ?? "Loading…"}</span>
+            <span class={{ err: s.status === "error" }}>{s.message ?? "Завантаження…"}</span>
           {:else}
             {info && !isMpv ? `${info.name} · ` : ""}{s.episodeLabel ?? ""}{s.episodeLabel
               ? " · "
@@ -143,7 +143,7 @@
     <button
       class="icon-btn"
       onclick={() => cmd("toggle")}
-      aria-label={s.paused ? "Play" : "Pause"}
+      aria-label={s.paused ? "Відтворити" : "Пауза"}
       disabled={!canControl}
     >
       {#if s.paused}<Play
@@ -157,9 +157,9 @@
       <button
         class={["icon-btn hide-sm", { primed: s.next?.status === "ready" }]}
         onclick={() => cmd("next")}
-        aria-label="Next episode"
+        aria-label="Наступна серія"
         disabled={!canControl}
-        title={nextText ?? "Next episode"}
+        title={nextText ?? "Наступна серія"}
         ><SkipForward size={22} strokeWidth={1.8} aria-hidden="true" /></button
       >
     {/if}
@@ -169,15 +169,17 @@
 {#if player.expanded}
   <dialog
     class="remote"
-    aria-label="Remote"
+    aria-label="Пульт"
     {@attach modal}
     oncancel={() => (player.expanded = false)}
   >
     <header>
-      <button class="icon-btn" onclick={() => (player.expanded = false)} aria-label="Close remote"
+      <button class="icon-btn" onclick={() => (player.expanded = false)} aria-label="Закрити пульт"
         ><ChevronDown size={22} strokeWidth={1.8} aria-hidden="true" /></button
       >
-      <span class="remote-label"><MonitorPlay size={17} aria-hidden="true" /> Playback remote</span>
+      <span class="remote-label"
+        ><MonitorPlay size={17} aria-hidden="true" /> Пульт відтворення</span
+      >
       <span class="player-status" role="status"
         ><span
           class={["status-dot", { online: available, paused: available && (s.paused || busy) }]}
@@ -202,10 +204,10 @@
             <a
               class="r-title"
               href={titleHref(s.provider, s.url)}
-              onclick={() => (player.expanded = false)}>{s.title ?? "Nothing playing"}</a
+              onclick={() => (player.expanded = false)}>{s.title ?? "Нічого не відтворюється"}</a
             >
           {:else}
-            <div class="r-title">{s.title ?? "Nothing playing"}</div>
+            <div class="r-title">{s.title ?? "Нічого не відтворюється"}</div>
           {/if}
           {#if s.episodeLabel}<div class="episode">{s.episodeLabel}</div>{/if}
           {#if s.link}<div class="source-meta">
@@ -234,12 +236,12 @@
               cmd("seek", { seconds: +e.currentTarget.value });
               scrub = null;
             }}
-            aria-label="Seek"
+            aria-label="Перемотка"
             disabled={!canControl || s.duration <= 0}
           />
           <div class="times">
             <span class="elapsed">{formatTime(position)}</span><span
-              >{formatTime(Math.max(0, s.duration - position))} remaining</span
+              >залишилось {formatTime(Math.max(0, s.duration - position))}</span
             >
           </div>
         </div>
@@ -256,14 +258,14 @@
             class="icon-btn lg"
             onclick={() => cmd("prev")}
             disabled={!canControl || !s.hasPrev}
-            aria-label="Previous episode"
+            aria-label="Попередня серія"
             ><SkipBack size={26} strokeWidth={1.8} aria-hidden="true" /></button
           >
           <button
             class="icon-btn lg"
             onclick={() => cmd("seek", { seconds: -10, relative: true })}
-            aria-label="Back 10 seconds"
-            title="Back 10 seconds"
+            aria-label="10 секунд назад"
+            title="10 секунд назад"
             disabled={!canControl || s.duration <= 0}
             ><RotateCcw size={26} strokeWidth={1.8} aria-hidden="true" /><span class="seek-label"
               >10s</span
@@ -273,7 +275,7 @@
             class="play"
             disabled={!canControl}
             onclick={() => cmd("toggle")}
-            aria-label={s.paused ? "Play" : "Pause"}
+            aria-label={s.paused ? "Відтворити" : "Пауза"}
           >
             {#if busy}<div class="spinner big"></div>{:else}{#if s.paused}<Play
                   size={34}
@@ -290,8 +292,8 @@
           <button
             class="icon-btn lg"
             onclick={() => cmd("seek", { seconds: 10, relative: true })}
-            aria-label="Forward 10 seconds"
-            title="Forward 10 seconds"
+            aria-label="10 секунд вперед"
+            title="10 секунд вперед"
             disabled={!canControl || s.duration <= 0}
             ><RotateCw size={26} strokeWidth={1.8} aria-hidden="true" /><span class="seek-label"
               >10s</span
@@ -301,7 +303,7 @@
             class="icon-btn lg"
             onclick={() => cmd("next")}
             disabled={!canControl || !s.hasNext}
-            aria-label="Next episode"
+            aria-label="Наступна серія"
             ><SkipForward size={26} strokeWidth={1.8} aria-hidden="true" /></button
           >
         </div>
@@ -309,7 +311,7 @@
         <div class="tracks">
           <label>
             <span class="track-heading"
-              ><Volume2 size={17} strokeWidth={1.8} aria-hidden="true" /> Audio</span
+              ><Volume2 size={17} strokeWidth={1.8} aria-hidden="true" /> Аудіо</span
             >
             <select
               onchange={(e) => cmd("track", { type: "audio", id: e.currentTarget.value })}
@@ -318,19 +320,19 @@
               {#each s.audioTracks as t (t.id)}<option value={String(t.id)} selected={t.selected}
                   >{trackLabel(t)}</option
                 >{/each}
-              {#if !s.audioTracks.length}<option>No audio tracks</option>{/if}
+              {#if !s.audioTracks.length}<option>Немає аудіодоріжок</option>{/if}
             </select>
           </label>
           <label>
             <span class="track-heading"
-              ><Captions size={17} strokeWidth={1.8} aria-hidden="true" /> Subtitles</span
+              ><Captions size={17} strokeWidth={1.8} aria-hidden="true" /> Субтитри</span
             >
             <select
               disabled={!canControl || !s.subTracks.length}
               onchange={(e) => cmd("track", { type: "sub", id: e.currentTarget.value })}
             >
               <option value="no" selected={!s.subTracks.some((t) => t.selected)}
-                >Subtitles off</option
+                >Без субтитрів</option
               >
               {#each s.subTracks as t (t.id)}<option value={String(t.id)} selected={t.selected}
                   >{trackLabel(t)}</option
@@ -339,7 +341,7 @@
           </label>
           <label class="vol">
             <span class="track-heading"
-              ><Volume1 size={17} strokeWidth={1.8} aria-hidden="true" /> Volume
+              ><Volume1 size={17} strokeWidth={1.8} aria-hidden="true" /> Гучність
               <span class="volume-value">{Math.round(shownVolume)}%</span></span
             >
             <input
@@ -362,10 +364,10 @@
 
         <div class="actions">
           <button class="btn source-action" disabled={!canSource} onclick={openSources}
-            ><Layers size={18} strokeWidth={1.8} aria-hidden="true" /> Sources</button
+            ><Layers size={18} strokeWidth={1.8} aria-hidden="true" /> Джерела</button
           >
           <button class="btn stop-action" disabled={!available} onclick={() => cmd("stop")}
-            ><Square size={18} strokeWidth={1.8} aria-hidden="true" /> Stop playback</button
+            ><Square size={18} strokeWidth={1.8} aria-hidden="true" /> Зупинити відтворення</button
           >
         </div>
       </div>

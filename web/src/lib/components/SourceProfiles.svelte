@@ -72,7 +72,8 @@
     draft.qualityPriorities = {};
     draft.hideFailedSources = false;
     draft.hideNegativeSources = false;
-    announcement = "Priorities and visibility reset. Save to apply, or undo the reset.";
+    announcement =
+      "Пріоритети та видимість скинуто. Збережіть, щоб застосувати, або скасуйте скидання.";
   }
 
   function edit() {
@@ -106,13 +107,13 @@
   async function saveProfile(event: SubmitEvent) {
     event.preventDefault();
     if (!draft || saving || !changeCount) return;
-    const profile = { ...draft, name: draft.name.trim() || `Profile ${draft.id}` };
+    const profile = { ...draft, name: draft.name.trim() || `Профіль ${draft.id}` };
     if (
       await save({
         source_profiles: settings.source_profiles.map((p) => (p.id === profile.id ? profile : p)),
       })
     ) {
-      toasts.show("Source profile saved");
+      toasts.show("Профіль джерел збережено");
     }
   }
 
@@ -124,9 +125,7 @@
     if (!addedNames.includes(name)) addedNames = [...addedNames, name];
     search = "";
     resetBackup = null;
-    announcement = exists
-      ? `${name} is already in this profile.`
-      : `Added ${name} with priority 1.`;
+    announcement = exists ? `${name} вже є в цьому профілі.` : `Додано ${name} з пріоритетом 1.`;
     sourceName = "";
   }
 </script>
@@ -136,7 +135,7 @@
     <div class="stepper">
       <button
         type="button"
-        aria-label="Lower priority for {label}"
+        aria-label="Знизити пріоритет для {label}"
         disabled={value <= -1000}
         onclick={() => {
           resetBackup = null;
@@ -149,7 +148,7 @@
         max="1000"
         step="1"
         required
-        aria-label="Priority for {label}"
+        aria-label="Пріоритет для {label}"
         {value}
         oninput={(event) => {
           resetBackup = null;
@@ -158,7 +157,7 @@
       />
       <button
         type="button"
-        aria-label="Raise priority for {label}"
+        aria-label="Підвищити пріоритет для {label}"
         disabled={value >= 1000}
         onclick={() => {
           resetBackup = null;
@@ -174,7 +173,7 @@
 <div class={["profiles", { "in-sources": !showPreview }]}>
   <div class="profile-picker">
     <label class="stack">
-      <span>Active source profile</span>
+      <span>Активний профіль джерел</span>
       <select
         value={settings.source_profile}
         disabled={saving || draft !== null}
@@ -187,15 +186,16 @@
     </label>
     {#if !draft}
       <button class="btn" onclick={edit} disabled={saving || !active}
-        ><Pencil size={16} /> Edit profile</button
+        ><Pencil size={16} /> Редагувати профіль</button
       >
     {:else}
-      <span class="editing-status">{changeCount ? "Unsaved changes" : "Editing profile"}</span>
+      <span class="editing-status">{changeCount ? "Незбережені зміни" : "Редагування профілю"}</span
+      >
     {/if}
   </div>
   <p class="hint">
-    Applies to auto-play, fallback and source pickers. Changing profiles keeps the current stream
-    playing.
+    Застосовується до автовідтворення, резервних джерел та вибору якості. Зміна профілю не перериває
+    поточне відтворення.
   </p>
 
   {#if shown && (showPreview || draft)}
@@ -203,21 +203,21 @@
       <details class="priority-guide">
         <summary
           ><span
-            ><strong>Higher priorities play first</strong><small
-              >Source + quality = video priority. Preview a combination.</small
+            ><strong>Вищий пріоритет відтворюється першим</strong><small
+              >Джерело + якість = пріоритет відео. Перегляньте комбінацію.</small
             ></span
           ><ChevronDown size={18} /></summary
         >
         <div class="preview-controls">
           <label class="stack"
-            >Source
+            >Джерело
             <select bind:value={previewSource}>
-              <option value="">Unlisted source (default)</option>
+              <option value="">Інше джерело (за замовчуванням)</option>
               {#each names as name (name)}<option value={name}>{name}</option>{/each}
             </select>
           </label>
           <label class="stack"
-            >Quality
+            >Якість
             <select bind:value={previewQuality}>
               {#each QUALITIES as quality (quality.value)}<option value={quality.value}
                   >{quality.label}</option
@@ -229,16 +229,16 @@
           <strong>{previewSourcePriority} + {previewQualityPriority} = {previewTotal}</strong>
           <span
             >{previewTotal < 0 && shown.hideNegativeSources
-              ? "Hidden and skipped in auto-play"
+              ? "Приховано та пропущено під час автовідтворення"
               : previewTotal >= 10
-                ? "Starts auto-play immediately"
-                : "Uses your usual wait settings"}</span
+                ? "Автовідтворення починається негайно"
+                : "Використовуються звичайні налаштування очікування"}</span
           >
         </div>
         <p class="hint">
-          A total of 10 or more starts auto-play immediately. This preview uses {draft
-            ? "your unsaved changes"
-            : "the selected profile"}.
+          Сума 10 або більше починає відтворення негайно. У попередньому перегляді використовуються {draft
+            ? "ваші незбережені зміни"
+            : "вибраний профіль"}.
         </p>
       </details>
     {/if}
@@ -251,37 +251,39 @@
       >
         {#if draft}
           <label class="stack profile-name"
-            >Profile name
-            <input bind:value={draft.name} maxlength="80" placeholder="Profile {draft.id}" />
+            >Назва профілю
+            <input bind:value={draft.name} maxlength="80" placeholder="Профіль {draft.id}" />
           </label>
         {/if}
 
         <div class="priority-columns">
           <section aria-labelledby="source-priorities-title">
             <div class="group-heading">
-              <h3 id="source-priorities-title">Source priorities</h3>
-              <span class="column-label">Higher = preferred</span>
+              <h3 id="source-priorities-title">Пріоритети джерел</h3>
+              <span class="column-label">Більше = краще</span>
             </div>
-            <p class="hint">Unlisted sources use 1. Names must match the source labels exactly.</p>
+            <p class="hint">
+              Інші джерела використовують 1. Назви мають точно збігатися з мітками джерел.
+            </p>
             {#if names.length > 5 || search}
               <div class="source-search">
                 <Search size={16} />
                 <input
                   type="search"
-                  aria-label="Find a source"
-                  placeholder="Find a source…"
+                  aria-label="Знайти джерело"
+                  placeholder="Знайти джерело…"
                   bind:value={search}
                 />
                 {#if search}<button
                     type="button"
                     class="icon-button"
-                    aria-label="Clear source search"
+                    aria-label="Очистити пошук джерел"
                     onclick={() => {
                       search = "";
                     }}><X size={16} /></button
                   >{/if}
               </div>
-              <p class="search-count">{filteredNames.length} of {names.length} sources</p>
+              <p class="search-count">{filteredNames.length} з {names.length} джерел</p>
             {/if}
             <div class="priority-list">
               {#each filteredNames as name (name)}
@@ -299,10 +301,10 @@
                     <span>{name}</span>
                     <small
                       >{draft && draft.sourcePriorities[name] !== active?.sourcePriorities[name]
-                        ? "Modified"
+                        ? "Змінено"
                         : shown.sourcePriorities[name] === undefined
-                          ? "Default · 1"
-                          : "Custom"}</small
+                          ? "Стандартний · 1"
+                          : "Власне"}</small
                     >
                   </div>
                   {@render priorityControl(name, shown.sourcePriorities[name] ?? 1, (value) => {
@@ -312,8 +314,8 @@
                     <button
                       class="icon-button"
                       type="button"
-                      aria-label="Reset priority for {name}"
-                      title="Reset to default (1)"
+                      aria-label="Скинути пріоритет для {name}"
+                      title="Скинути до стандартного (1)"
                       disabled={draft.sourcePriorities[name] === undefined}
                       onclick={() => {
                         if (draft) delete draft.sourcePriorities[name];
@@ -327,37 +329,37 @@
               {:else}
                 {#if search}
                   <div class="empty-sources">
-                    <strong>No matching sources</strong>
-                    <p class="hint">Try a different name or clear the search.</p>
+                    <strong>Джерел не знайдено</strong>
+                    <p class="hint">Спробуйте іншу назву або очистіть пошук.</p>
                     <button
                       type="button"
                       class="reset"
                       onclick={() => {
                         search = "";
-                      }}>Clear search</button
+                      }}>Очистити пошук</button
                     >
                   </div>
                 {:else}
                   <div class="empty-sources">
-                    <strong>All sources use the default priority</strong>
+                    <strong>Усі джерела використовують стандартний пріоритет</strong>
                     <p class="hint">
-                      Open an episode’s sources to see its names here, or add an exact source name{draft
-                        ? " below"
-                        : " when editing"}.
+                      Відкрийте джерела серії, щоб побачити їхні назви тут, або введіть точну назву{draft
+                        ? " нижче"
+                        : " у режимі редагування"}.
                     </p>
-                    <span class="default-value">Default priority <b>1</b></span>
+                    <span class="default-value">Стандартний пріоритет: <b>1</b></span>
                   </div>
                 {/if}
               {/each}
             </div>
             {#if draft}
-              <label class="stack add-label" for="priority-source-name">Add a source</label>
+              <label class="stack add-label" for="priority-source-name">Додати джерело</label>
               <div class="add-source">
                 <input
                   id="priority-source-name"
                   bind:value={sourceName}
                   maxlength="200"
-                  placeholder="Exact source name"
+                  placeholder="Точна назва джерела"
                   onkeydown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -366,7 +368,7 @@
                   }}
                 />
                 <button type="button" class="btn" disabled={!sourceName.trim()} onclick={addSource}
-                  ><Plus size={16} /> Add</button
+                  ><Plus size={16} /> Додати</button
                 >
               </div>
             {/if}
@@ -374,10 +376,10 @@
 
           <section aria-labelledby="quality-priorities-title">
             <div class="group-heading">
-              <h3 id="quality-priorities-title">Quality priorities</h3>
-              <span class="column-label">Higher = preferred</span>
+              <h3 id="quality-priorities-title">Пріоритети якості</h3>
+              <span class="column-label">Більше = краще</span>
             </div>
-            <p class="hint">Added to the source priority for each video link.</p>
+            <p class="hint">Додається до пріоритету джерела для кожного посилання.</p>
             <div class="priority-list">
               {#each QUALITIES as quality (quality.value)}
                 <div
@@ -394,7 +396,7 @@
                   <div class="source-label">
                     <span>{quality.label}</span>
                     {#if draft && (draft.qualityPriorities[quality.value] ?? quality.priority) !== (active?.qualityPriorities[quality.value] ?? quality.priority)}<small
-                        >Modified</small
+                        >Змінено</small
                       >{/if}
                   </div>
                   {@render priorityControl(
@@ -411,52 +413,55 @@
         </div>
 
         <section class="visibility" aria-labelledby="priority-visibility-title">
-          <h3 id="priority-visibility-title">Visibility</h3>
+          <h3 id="priority-visibility-title">Видимість</h3>
           {#if draft}
             <label class="check">
               <span
-                ><b>Hide failed sources</b><small
-                  >Hide links that failed in this playback session.</small
+                ><b>Приховувати джерела з помилками</b><small
+                  >Приховувати посилання, які не вдалося відтворити під час цієї сесії.</small
                 ></span
               >
               <input type="checkbox" role="switch" bind:checked={draft.hideFailedSources} />
             </label>
             <label class="check">
               <span
-                ><b>Hide negative-priority sources</b><small
-                  >Hide links with a negative total priority and skip them in auto-play.</small
+                ><b>Приховувати джерела з від'ємним пріоритетом</b><small
+                  >Приховувати посилання із сумарним від'ємним пріоритетом та пропускати їх під час
+                  автовідтворення.</small
                 ></span
               >
               <input type="checkbox" role="switch" bind:checked={draft.hideNegativeSources} />
             </label>
           {:else}
             <div class="visibility-summary">
-              <span>Hide failed sources</span><b>{shown.hideFailedSources ? "On" : "Off"}</b>
+              <span>Приховувати джерела з помилками</span><b
+                >{shown.hideFailedSources ? "Увімкнено" : "Вимкнено"}</b
+              >
             </div>
             <div class="visibility-summary">
-              <span>Hide negative-priority sources</span><b
-                >{shown.hideNegativeSources ? "On" : "Off"}</b
+              <span>Приховувати джерела з від'ємним пріоритетом</span><b
+                >{shown.hideNegativeSources ? "Увімкнено" : "Вимкнено"}</b
               >
             </div>
           {/if}
-          <p class="hint">The current stream always stays visible.</p>
+          <p class="hint">Поточне відео завжди залишається видимим.</p>
         </section>
         {#if draft}
           <div class="reset-area">
             {#if resetBackup}
-              <span class="hint">Profile reset to defaults.</span>
+              <span class="hint">Параметри профілю скинуто до початкових.</span>
               <button
                 class="reset"
                 type="button"
                 onclick={() => {
                   draft = resetBackup;
                   resetBackup = null;
-                  announcement = "Reset undone.";
-                }}>Undo reset</button
+                  announcement = "Скидання скасовано.";
+                }}>Скасувати скидання</button
               >
             {:else}
               <button class="reset" type="button" onclick={resetProfile}
-                ><RotateCcw size={15} /> Reset priorities and visibility</button
+                ><RotateCcw size={15} /> Скинути пріоритети та видимість</button
               >
             {/if}
           </div>
@@ -465,14 +470,16 @@
       </fieldset>
       {#if draft}
         <div class="save-bar">
-          {#if error}<p class="error" role="alert">Could not save: {error}. Try again.</p>{/if}
+          {#if error}<p class="error" role="alert">
+              Не вдалося зберегти: {error}. Спробуйте знову.
+            </p>{/if}
           <div class="actions">
             <span class={["save-status", { pending: changeCount > 0 }]} role="status"
               >{saving
-                ? "Saving profile…"
+                ? "Збереження профілю…"
                 : changeCount
-                  ? `${changeCount} unsaved ${changeCount === 1 ? "change" : "changes"}`
-                  : "No changes yet"}</span
+                  ? `${changeCount} незбережених змін`
+                  : "Немає змін"}</span
             >
             <button
               class="btn"
@@ -483,17 +490,19 @@
                 error = null;
                 announcement = "";
                 resetBackup = null;
-              }}>Cancel</button
+              }}>Скасувати</button
             >
             <button class="btn primary" type="submit" disabled={saving || !changeCount}
-              ><Check size={16} />{saving ? "Saving…" : "Save changes"}</button
+              ><Check size={16} />{saving ? "Збереження…" : "Зберегти зміни"}</button
             >
           </div>
         </div>
       {/if}
     </form>
   {/if}
-  {#if error && !draft}<p class="error" role="alert">Could not save: {error}. Try again.</p>{/if}
+  {#if error && !draft}<p class="error" role="alert">
+      Не вдалося зберегти: {error}. Спробуйте знову.
+    </p>{/if}
 </div>
 
 <style>

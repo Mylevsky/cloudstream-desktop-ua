@@ -72,7 +72,7 @@
   let box = $state({ w: 0, h: 0 });
   let natural = $state({ w: 0, h: 0 });
   const resolution = $derived(natural.w && natural.h ? `${natural.w}×${natural.h}` : null);
-  const selectedQuality = $derived(p.levels.find((l) => l.id === p.level)?.label ?? "Auto");
+  const selectedQuality = $derived(p.levels.find((l) => l.id === p.level)?.label ?? "Авто");
   // Text subtitles follow the visible picture, excluding letterboxing. Zoom and stretch fill the box.
   const picture = $derived.by(() => {
     const fit = natural.w && natural.h ? Math.min(box.w / natural.w, box.h / natural.h) : 0;
@@ -99,9 +99,9 @@
     return `scale(${w / (vw * fit)}, ${h / (vh * fit)})`;
   });
   const RESIZE = [
-    { mode: "fit", label: "Fit", icon: RectangleHorizontal },
-    { mode: "fill", label: "Stretch", icon: MoveHorizontal },
-    { mode: "zoom", label: "Zoom", icon: ZoomIn },
+    { mode: "fit", label: "За розміром", icon: RectangleHorizontal },
+    { mode: "fill", label: "Розтягнути", icon: MoveHorizontal },
+    { mode: "zoom", label: "Збільшити", icon: ZoomIn },
   ] satisfies { mode: ResizeMode; label: string; icon: unknown }[];
   const resize = $derived(RESIZE.find((r) => r.mode === pref.resizeMode) ?? RESIZE[0]);
 
@@ -604,23 +604,23 @@
         onpointermove={dragMove}
         onpointerup={dragUp}
         onpointercancel={dragUp}
-        aria-label="Expand player"
+        aria-label="Розгорнути плеєр"
       ></button>
-      <button class="mini-close" onclick={close} aria-label="Close player"
+      <button class="mini-close" onclick={close} aria-label="Закрити плеєр"
         ><X size={18} strokeWidth={2} aria-hidden="true" /></button
       >
       <div class="mini-bar">
         <div class="mini-text">
           <div class="title">{p.item?.details.name ?? ""}</div>
           <div class="sub">
-            {p.status === "error" ? (p.message ?? "Couldn't play") : p.label}
+            {p.status === "error" ? (p.message ?? "Не вдалося відтворити") : p.label}
           </div>
         </div>
         <button
           class="icon"
           onclick={() => p.toggle()}
           disabled={p.status === "resolving" || p.status === "error"}
-          aria-label={p.status === "ended" ? "Replay" : p.paused ? "Play" : "Pause"}
+          aria-label={p.status === "ended" ? "Повторити" : p.paused ? "Відтворити" : "Пауза"}
         >
           {#if p.status === "ended"}<RotateCcw size={20} strokeWidth={2} aria-hidden="true" />
           {:else if p.paused}<Play
@@ -642,13 +642,13 @@
     {:else}
       {#if p.status === "error"}
         <div class="card error" role="alert">
-          <p>{p.message ?? "Couldn't play this episode"}</p>
+          <p>{p.message ?? "Не вдалося відтворити цю серію"}</p>
           <div class="row">
             <button class="btn" onclick={openSources}
-              ><Layers size={18} strokeWidth={1.8} aria-hidden="true" /> Sources</button
+              ><Layers size={18} strokeWidth={1.8} aria-hidden="true" /> Джерела</button
             >
             <button class="btn" onclick={() => p.retry()}
-              ><RefreshCw size={18} strokeWidth={1.8} aria-hidden="true" /> Retry</button
+              ><RefreshCw size={18} strokeWidth={1.8} aria-hidden="true" /> Повторити</button
             >
           </div>
         </div>
@@ -686,7 +686,7 @@
 
       {#if p.skip}
         <button class="skip-btn" onclick={() => p.skipNow()}
-          ><FastForward size={16} strokeWidth={1.8} aria-hidden="true" /> Skip {skipName(
+          ><FastForward size={16} strokeWidth={1.8} aria-hidden="true" /> Пропустити {skipName(
             p.skip,
           )}</button
         >
@@ -694,18 +694,18 @@
 
       {#if p.upNext != null}
         <div class="card up-next">
-          <small>Up next in {p.upNext}</small>
-          <b>{p.item?.episodes[(p.item?.index ?? 0) + 1]?.name ?? "Next episode"}</b>
+          <small>Далі через {p.upNext}</small>
+          <b>{p.item?.episodes[(p.item?.index ?? 0) + 1]?.name ?? "Наступна серія"}</b>
           <div class="row">
-            <button class="btn primary" onclick={() => p.next()}>Play now</button>
-            <button class="btn" onclick={() => p.cancelUpNext()}>Cancel</button>
+            <button class="btn primary" onclick={() => p.next()}>Дивитися зараз</button>
+            <button class="btn" onclick={() => p.cancelUpNext()}>Скасувати</button>
           </div>
         </div>
       {/if}
 
       <div class={["chrome", { shown: controls, holding }]} inert={!controls}>
         <div class="top">
-          <button class="icon" onclick={minimize} aria-label="Minimize player" title="Minimize"
+          <button class="icon" onclick={minimize} aria-label="Згорнути плеєр" title="Згорнути"
             ><ChevronDown size={26} strokeWidth={1.8} aria-hidden="true" /></button
           >
           <div class="titles">
@@ -715,14 +715,14 @@
           <button
             class="action size"
             onclick={cycleResize}
-            aria-label={`Video size: ${resize.label}. Change`}
-            title="Video size"
+            aria-label={`Розмір відео: ${resize.label}. Змінити`}
+            title="Розмір відео"
             ><resize.icon size={19} strokeWidth={1.8} aria-hidden="true" /><span
               >{resize.label}</span
             ></button
           >
           {#if "pictureInPictureEnabled" in document && document.pictureInPictureEnabled}
-            <button class="icon" onclick={togglePip} aria-label="Picture in picture"
+            <button class="icon" onclick={togglePip} aria-label="Картинка в картинці"
               ><PictureInPicture2 size={20} strokeWidth={1.8} aria-hidden="true" /></button
             >
           {/if}
@@ -733,14 +733,14 @@
             class="icon mid"
             onclick={() => p.prev()}
             disabled={!p.hasPrev}
-            aria-label="Previous episode"
+            aria-label="Попередня серія"
             ><SkipBack size={26} fill="currentColor" strokeWidth={1.8} aria-hidden="true" /></button
           >
           <button
             class="icon play"
             onclick={() => p.toggle()}
             disabled={p.status === "resolving" || p.status === "error"}
-            aria-label={p.status === "ended" ? "Replay" : p.paused ? "Play" : "Pause"}
+            aria-label={p.status === "ended" ? "Повторити" : p.paused ? "Відтворити" : "Пауза"}
           >
             {#if p.status === "ended"}<RotateCcw
                 size={32}
@@ -762,7 +762,7 @@
             class="icon mid"
             onclick={() => p.next()}
             disabled={!p.hasNext}
-            aria-label="Next episode"
+            aria-label="Наступна серія"
             ><SkipForward
               size={26}
               fill="currentColor"
@@ -779,8 +779,12 @@
               type="button"
               class="time-toggle"
               onclick={() => prefs.update({ showTotalDuration: !pref.showTotalDuration })}
-              aria-label={pref.showTotalDuration ? "Show time remaining" : "Show total duration"}
-              title={pref.showTotalDuration ? "Show time remaining" : "Show total duration"}
+              aria-label={pref.showTotalDuration
+                ? "Показати залишок часу"
+                : "Показати загальну тривалість"}
+              title={pref.showTotalDuration
+                ? "Показати залишок часу"
+                : "Показати загальну тривалість"}
             >
               {pref.showTotalDuration
                 ? formatTime(p.duration)
@@ -795,13 +799,17 @@
             onseek={(t) => p.seekTo(t)}
           />
           <div class="actions">
-            <button class="icon" onclick={close} aria-label="Stop and close player" title="Stop"
+            <button
+              class="icon"
+              onclick={close}
+              aria-label="Зупинити та закрити плеєр"
+              title="Зупинити"
               ><Square size={20} fill="currentColor" strokeWidth={1.8} aria-hidden="true" /></button
             >
             <button
               class="icon"
               onclick={() => video && (video.muted = !video.muted)}
-              aria-label={pref.muted ? "Unmute" : "Mute"}
+              aria-label={pref.muted ? "Увімкнути звук" : "Вимкнути звук"}
               >{#if pref.muted || pref.volume === 0}<VolumeX
                   size={20}
                   strokeWidth={1.8}
@@ -815,33 +823,33 @@
               max="1"
               step="0.01"
               value={pref.muted ? 0 : pref.volume}
-              aria-label="Volume"
+              aria-label="Гучність"
               oninput={(e) => setVolume(Number(e.currentTarget.value))}
               onkeydown={(e) => e.stopPropagation()}
             />
             <span class="spacer"></span>
             <button class="action" onclick={() => (panel = panel === "speed" ? null : "speed")}
               ><Gauge size={19} strokeWidth={1.8} aria-hidden="true" /><span
-                >{p.rate === 1 ? "Speed" : `${p.rate}×`}</span
+                >{p.rate === 1 ? "Швидкість" : `${p.rate}×`}</span
               ></button
             >
             <button class="action" onclick={openSources}
-              ><Layers size={19} strokeWidth={1.8} aria-hidden="true" /><span>Sources</span></button
+              ><Layers size={19} strokeWidth={1.8} aria-hidden="true" /><span>Джерела</span></button
             >
             <button class="action" onclick={() => (panel = panel === "tracks" ? null : "tracks")}
               ><Captions size={19} strokeWidth={1.8} aria-hidden="true" /><span
-                >Audio &amp; subs</span
+                >Аудіо та субтитри</span
               ></button
             >
             {#if p.levels.length > 1}
               <button
                 class="action"
                 onclick={() => (panel = panel === "quality" ? null : "quality")}
-                aria-label={`Video quality: ${selectedQuality}${resolution ? `. Playing at ${resolution}` : ""}`}
+                aria-label={`Якість відео: ${selectedQuality}${resolution ? `. Відтворення: ${resolution}` : ""}`}
                 aria-expanded={panel === "quality"}
-                title={`Video quality: ${selectedQuality}${resolution ? ` · ${resolution}` : ""}`}
+                title={`Якість відео: ${selectedQuality}${resolution ? ` · ${resolution}` : ""}`}
                 ><Monitor size={19} strokeWidth={1.8} aria-hidden="true" /><span
-                  >{p.level < 0 ? "Quality" : selectedQuality}</span
+                  >{p.level < 0 ? "Якість" : selectedQuality}</span
                 ></button
               >
             {/if}
@@ -849,14 +857,14 @@
               <button
                 class="action"
                 onclick={() => (panel = panel === "episodes" ? null : "episodes")}
-                ><ListVideo size={19} strokeWidth={1.8} aria-hidden="true" /><span>Episodes</span
+                ><ListVideo size={19} strokeWidth={1.8} aria-hidden="true" /><span>Серії</span
                 ></button
               >
             {/if}
             <button
               class="icon fullscreen"
               onclick={toggleFullscreen}
-              aria-label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+              aria-label={fullscreen ? "Вийти з повного екрана" : "Повний екран"}
               >{#if fullscreen}<Minimize
                   size={20}
                   strokeWidth={1.8}

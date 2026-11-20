@@ -43,31 +43,38 @@
     }
   }
 
+  const bookmarkLabels: Record<string, string> = {
+    watching: "Дивлюся",
+    planned: "У планах",
+    completed: "Переглянуто",
+    dropped: "Покинуто",
+  };
+
   const ago = (t: number) => {
     const m = Math.round((Date.now() - t) / 60000);
-    if (m < 60) return `${m} min ago`;
-    if (m < 1440) return `${Math.round(m / 60)} h ago`;
-    return new Date(t).toLocaleDateString();
+    if (m < 60) return `${m} хв тому`;
+    if (m < 1440) return `${Math.round(m / 60)} год тому`;
+    return new Date(t).toLocaleDateString("uk-UA");
   };
 </script>
 
 <div class="page">
   <div class="page-heading">
-    <h1 class="page-title">Library</h1>
-    <p>Your watchlist and the stories you’ve started.</p>
+    <h1 class="page-title">Медіатека</h1>
+    <p>Ваш список перегляду та розпочаті тайтли.</p>
   </div>
-  <div class="seg" role="group" aria-label="Library view">
+  <div class="seg" role="group" aria-label="Розділ медіатеки">
     <button
       aria-pressed={tab === "history"}
       class:on={tab === "history"}
       onclick={() => (tab = "history")}
-      ><History size={17} strokeWidth={1.8} aria-hidden="true" /> History</button
+      ><History size={17} strokeWidth={1.8} aria-hidden="true" /> Історія</button
     >
     <button
       aria-pressed={tab === "bookmarks"}
       class:on={tab === "bookmarks"}
       onclick={() => (tab = "bookmarks")}
-      ><Bookmark size={17} strokeWidth={1.8} aria-hidden="true" /> Bookmarks</button
+      ><Bookmark size={17} strokeWidth={1.8} aria-hidden="true" /> Закладки</button
     >
   </div>
 
@@ -76,21 +83,23 @@
   {:else if activeQuery.isError}
     <div class="empty library-empty" role="status">
       <CircleAlert size={32} strokeWidth={1.8} aria-hidden="true" />
-      <h2>Couldn’t load your {tab}</h2>
+      <h2>
+        {tab === "history" ? "Не вдалося завантажити історію" : "Не вдалося завантажити закладки"}
+      </h2>
       <p>{activeQuery.error.message}</p>
       <button class="btn" onclick={() => activeQuery.refetch()}
-        ><RefreshCw size={17} aria-hidden="true" /> Try again</button
+        ><RefreshCw size={17} aria-hidden="true" /> Спробувати знову</button
       >
     </div>
   {:else if tab === "history"}
     {#if history.data?.length}
       <div class="history-actions">
         <div class="history-label">
-          <h2>Recently watched</h2>
-          <p>Your viewing history</p>
+          <h2>Нещодавно переглянуті</h2>
+          <p>Історія ваших переглядів</p>
         </div>
         <button class="clear-trigger" onclick={() => clearDialog.showModal()} disabled={clearing}>
-          <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" /> Clear all
+          <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" /> Очистити все
         </button>
       </div>
       <div class="grid history-grid">
@@ -110,7 +119,7 @@
             <button
               class="forget"
               onclick={() => forget(h.provider, h.url)}
-              aria-label="Remove {h.title} from history"
+              aria-label="Видалити {h.title} з історії"
               ><X size={16} strokeWidth={1.8} aria-hidden="true" /></button
             >
           </div>
@@ -119,9 +128,12 @@
     {:else if history.isSuccess}
       <div class="empty library-empty">
         <History size={32} strokeWidth={1.8} aria-hidden="true" />
-        <h2>Your story starts here</h2>
-        <p>Titles you watch will appear here, so you can pick up where you left off.</p>
-        <a class="btn" href="/"><Search size={17} aria-hidden="true" /> Find something to watch</a>
+        <h2>Тут починається ваша історія</h2>
+        <p>
+          Фільми та серіали, які ви дивитеся, з'являться тут, щоб ви могли легко продовжити
+          перегляд.
+        </p>
+        <a class="btn" href="/"><Search size={17} aria-hidden="true" /> Знайти що подивитися</a>
       </div>
     {/if}
   {:else if bookmarks.data?.length}
@@ -129,7 +141,7 @@
       {@const items = bookmarks.data.filter((b) => b.list === list)}
       {#if items.length}
         <h2 class="section-title">
-          {list[0].toUpperCase() + list.slice(1)}
+          {bookmarkLabels[list] ?? list}
           <span class="muted">{items.length}</span>
         </h2>
         <div class="grid">
@@ -148,9 +160,9 @@
   {:else if bookmarks.isSuccess}
     <div class="empty library-empty">
       <Bookmark size={32} strokeWidth={1.8} aria-hidden="true" />
-      <h2>Keep your next watch close</h2>
-      <p>Choose “Add to library” on a title to save it here.</p>
-      <a class="btn" href="/">Browse titles</a>
+      <h2>Зберігайте цікаве на потім</h2>
+      <p>Натисніть «Додати до списку» на сторінці тайтла, щоб зберегти його тут.</p>
+      <a class="btn" href="/">Каталог тайтлів</a>
     </div>
   {/if}
 </div>
@@ -167,15 +179,15 @@
   <div class="dialog-icon">
     <Trash2 size={21} strokeWidth={1.8} aria-hidden="true" />
   </div>
-  <h2 id="clear-title">Clear watch history?</h2>
+  <h2 id="clear-title">Очистити історію перегляду?</h2>
   <p id="clear-description">
-    This removes all titles from your history and deletes their saved watch progress. Your bookmarks
-    will stay in your library.
+    Це видалить усі тайтли з вашої історії перегляду та скине збережений прогрес. Ваші закладки
+    залишаться без змін.
   </p>
   <div class="dialog-actions">
-    <button class="btn" onclick={() => clearDialog.close()} disabled={clearing}>Cancel</button>
+    <button class="btn" onclick={() => clearDialog.close()} disabled={clearing}>Скасувати</button>
     <button class="btn clear-confirm" onclick={clearHistory} disabled={clearing}>
-      {clearing ? "Clearing…" : "Clear history"}
+      {clearing ? "Очищення…" : "Очистити історію"}
     </button>
   </div>
 </dialog>

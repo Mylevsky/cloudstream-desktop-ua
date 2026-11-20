@@ -70,9 +70,9 @@
       .toSorted((a, b) => a.name.localeCompare(b.name)),
   );
 
-  const languageNames = new Intl.DisplayNames(["en"], { type: "language" });
+  const languageNames = new Intl.DisplayNames(["uk", "en"], { type: "language" });
   function language(code: string) {
-    if (!code) return "Unknown language";
+    if (!code) return "Невідома мова";
     try {
       return languageNames.of(code) ?? code;
     } catch {
@@ -135,7 +135,7 @@
   }}
 />
 
-<section class="provider-picker" aria-label="Source selection">
+<section class="provider-picker" aria-label="Вибір джерела">
   <div class="toolbar">
     <button
       class="source-trigger"
@@ -155,11 +155,11 @@
           />{/if}
       </span>
       <span class="source-heading">
-        <span class="source-name">{current?.name ?? "Choose a source"}</span>
+        <span class="source-name">{current?.name ?? "Виберіть джерело"}</span>
         <span class="source-hint"
           >{current
-            ? `${language(current.lang)} · Change source`
-            : "Browse installed plugins"}</span
+            ? `${language(current.lang)} · Змінити джерело`
+            : "Огляд встановлених плагінів"}</span
         >
       </span>
       <ChevronDown
@@ -169,25 +169,25 @@
         aria-hidden="true"
       />
     </button>
-    <a class="manage" href="/settings">Manage plugins</a>
+    <a class="manage" href="/settings">Керування плагінами</a>
   </div>
 
   {#if open}
-    <div class="source-browser" id="{id}-sources" role="region" aria-label="Available sources">
+    <div class="source-browser" id="{id}-sources" role="region" aria-label="Доступні джерела">
       <div class="search-box">
         <Search size={18} strokeWidth={1.8} aria-hidden="true" />
         <input
           type="search"
-          placeholder="Find a source or plugin…"
-          aria-label="Find a source or plugin"
+          placeholder="Знайти джерело або плагін…"
+          aria-label="Знайти джерело або плагін"
           bind:value={query}
           {@attach (input) => input.focus()}
         />
-        <button class="close" aria-label="Close source picker" onclick={close}
+        <button class="close" aria-label="Закрити вибір джерела" onclick={close}
           ><X size={18} strokeWidth={1.8} aria-hidden="true" /></button
         >
       </div>
-      <div class="filters" role="group" aria-label="Filter sources by content type">
+      <div class="filters" role="group" aria-label="Фільтр джерел за типом контенту">
         {#each filters as filter (filter.id)}
           {@const Icon = categoryIcons[filter.id]}
           <button
@@ -202,9 +202,9 @@
       </div>
       <div class="list-heading" role="status">
         {visible.length}
-        {visible.length === 1 ? "source" : "sources"}{selectedLabels
-          ? ` for ${selectedLabels}`
-          : " available"}
+        {visible.length === 1 ? "джерело" : "джерел"}{selectedLabels
+          ? ` для ${selectedLabels}`
+          : " доступно"}
       </div>
       {#if visible.length}
         <ul class="source-list">
@@ -236,20 +236,22 @@
                     size={18}
                     strokeWidth={2}
                     aria-hidden="true"
-                  /><span class="sr-only">Selected</span>{/if}
+                  /><span class="sr-only">Вибрано</span>{/if}
               </button>
             </li>
           {/each}
         </ul>
       {:else}
         <div class="no-sources">
-          <p>No sources match{query.trim() ? ` “${query.trim()}”` : " these categories"}.</p>
+          <p>
+            Жодне джерело не відповідає{query.trim() ? ` «${query.trim()}»` : " цим категоріям"}.
+          </p>
           <button
             class="btn"
             onclick={() => {
               query = "";
               setFilters([]);
-            }}>Reset filters</button
+            }}>Скинути фільтри</button
           >
         </div>
       {/if}

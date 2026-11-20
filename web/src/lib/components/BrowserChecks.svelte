@@ -24,8 +24,8 @@
 
   const what = (c: BrowserCheck) =>
     c.kind === "cloudflare"
-      ? "Cloudflare is asking for a human check"
-      : "This page didn't finish loading in the background browser";
+      ? "Cloudflare вимагає перевірки на людину"
+      : "Сторінка не завершила завантаження у фоновому браузері";
 </script>
 
 {#if browser.data?.checks.length}
@@ -37,23 +37,24 @@
           <b>{c.host}</b>
           <small>
             {#if c.solving}
-              Pass the check in the Chromium window on the desktop{c.kind === "page"
-                ? ", then close the tab"
+              Пройдіть перевірку у вікні Chromium на сервері{c.kind === "page"
+                ? ", потім закрийте вкладку"
                 : ""}.
             {:else}
-              {what(c)}. Solving opens it in a window on the desktop.
+              {what(c)}. Натисніть «Пройти», щоб відкрити вікно на сервері.
             {/if}
           </small>
         </div>
         {#if c.solving}
-          <span class="spinner" aria-label="Waiting"></span>
+          <span class="spinner" aria-label="Очікування"></span>
         {:else}
-          <button class="btn primary" onclick={() => act(() => api.solveCheck(c.id))}>Solve</button>
+          <button class="btn primary" onclick={() => act(() => api.solveCheck(c.id))}>Пройти</button
+          >
         {/if}
         <button
           class="dismiss"
           onclick={() => act(() => api.dismissCheck(c.id))}
-          aria-label="Dismiss"><X size={18} strokeWidth={1.8} aria-hidden="true" /></button
+          aria-label="Закрити"><X size={18} strokeWidth={1.8} aria-hidden="true" /></button
         >
       </div>
     {/each}

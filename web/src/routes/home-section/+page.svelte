@@ -40,7 +40,7 @@
 
 <div class="page">
   <a class="back" href="/"
-    ><ArrowLeft size={18} strokeWidth={1.8} aria-hidden="true" /> Back to home</a
+    ><ArrowLeft size={18} strokeWidth={1.8} aria-hidden="true" /> Назад на головну</a
   >
   <div class="page-heading">
     <h1 class="page-title">{name}</h1>
@@ -49,14 +49,15 @@
 
   {#if !valid}
     <p class="muted">
-      This section link is incomplete. Return home and choose “View all” from a section.
+      Неповне посилання на розділ. Поверніться на головну та виберіть «Дивитися все» у потрібному
+      розділі.
     </p>
   {:else if titles.isPending}
     <LoadingSkeleton />
   {:else if titles.isError && !titles.data}
     <div class="empty">
-      <p>Couldn't load this section: {titles.error?.message}</p>
-      <button class="btn" onclick={() => titles.refetch()}>Try again</button>
+      <p>Не вдалося завантажити цей розділ: {titles.error?.message}</p>
+      <button class="btn" onclick={() => titles.refetch()}>Спробувати знову</button>
     </div>
   {:else}
     <div class={["poster-grid", { horizontal }]} aria-busy={titles.isFetchingNextPage}>
@@ -77,14 +78,11 @@
     <div class="pagination">
       <p class="muted" role="status">
         {#if titles.isFetchingNextPage}
-          Loading more titles…
+          Завантаження тайтлів…
         {:else if !items.length}
-          No titles in this section yet.
+          У цьому розділі ще немає тайтлів.
         {:else}
-          {items.length}
-          {items.length === 1 ? "title" : "titles"}{titles.hasNextPage
-            ? " loaded"
-            : " · All loaded"}
+          Завантажено: {items.length}{titles.hasNextPage ? "" : " · Завантажено всі"}
         {/if}
       </p>
       <InfiniteLoader

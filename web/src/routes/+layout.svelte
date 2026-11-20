@@ -76,11 +76,11 @@
   });
 
   const nav = [
-    { href: "/", label: "Home", icon: House },
-    { href: "/search", label: "Search", icon: Search },
-    { href: "/library", label: "Library", icon: Library },
-    { href: "/downloads", label: "Downloads", icon: Download },
-    { href: "/settings", label: "Settings", icon: Settings2 },
+    { href: "/", label: "Головна", icon: House },
+    { href: "/search", label: "Пошук", icon: Search },
+    { href: "/library", label: "Медіатека", icon: Library },
+    { href: "/downloads", label: "Завантаження", icon: Download },
+    { href: "/settings", label: "Налаштування", icon: Settings2 },
   ];
 
   // Native-app feel: every screen keeps its scroll position, and a tab reopens on the screen you left.
@@ -102,10 +102,10 @@
   <Pairing notice={claimError} />
 {:else if authed}
   <QueryClientProvider {client}>
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content">Перейти до вмісту</a>
     <div class={["shell", { "with-bar": player.active }]}>
-      <nav aria-label="Main">
-        <a class="brand" href="/" aria-label="Cloudstream Desktop, go to Home">
+      <nav aria-label="Головна навігація">
+        <a class="brand" href="/" aria-label="Cloudstream Desktop, на головну">
           <span class="brand-icon"
             ><Play size={20} fill="currentColor" strokeWidth={1.8} aria-hidden="true" /></span
           >

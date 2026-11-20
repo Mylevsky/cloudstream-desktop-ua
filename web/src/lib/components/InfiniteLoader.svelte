@@ -34,13 +34,15 @@
   <div class={["load-more", { horizontal }]} {@attach observeEnd}>
     {#if loading}
       <span class="loading" role="status"
-        ><span class="spinner" aria-hidden="true"></span> Loading more titles…</span
+        ><span class="spinner" aria-hidden="true"></span> Завантаження тайтлів…</span
       >
     {:else}
       {#if error}<p class="load-error" role="alert">
-          Couldn't load more titles: {error}
+          Не вдалося завантажити більше тайтлів: {error}
         </p>{/if}
-      <button class="btn" onclick={onloadmore}>{error ? "Try again" : "Load more"}</button>
+      <button class="btn" onclick={onloadmore}
+        >{error ? "Спробувати знову" : "Завантажити ще"}</button
+      >
     {/if}
   </div>
 {/if}

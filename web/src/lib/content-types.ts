@@ -1,15 +1,15 @@
 // Cloudstream's TvType names, grouped into readable browsing filters.
 export const CONTENT_TYPES = [
-  { id: "anime", label: "Anime", types: ["Anime", "AnimeMovie", "OVA"] },
-  { id: "movies", label: "Movies", types: ["Movie", "AnimeMovie"] },
-  { id: "series", label: "TV Series", types: ["TvSeries"] },
-  { id: "drama", label: "Asian Drama", types: ["AsianDrama"] },
-  { id: "cartoons", label: "Cartoons", types: ["Cartoon"] },
-  { id: "documentaries", label: "Documentaries", types: ["Documentary"] },
-  { id: "live", label: "Live", types: ["Live"] },
-  { id: "torrent", label: "Torrents", types: ["Torrent"] },
-  { id: "adult", label: "Adult", types: ["NSFW"] },
-  { id: "other", label: "Other", types: ["Others", "Music", "AudioBook", "CustomMedia"] },
+  { id: "anime", label: "Аніме", types: ["Anime", "AnimeMovie", "OVA"] },
+  { id: "movies", label: "Фільми", types: ["Movie", "AnimeMovie"] },
+  { id: "series", label: "Серіали", types: ["TvSeries"] },
+  { id: "drama", label: "Дорами", types: ["AsianDrama"] },
+  { id: "cartoons", label: "Мультфільми", types: ["Cartoon"] },
+  { id: "documentaries", label: "Документальні", types: ["Documentary"] },
+  { id: "live", label: "Прямий ефір", types: ["Live"] },
+  { id: "torrent", label: "Торренти", types: ["Torrent"] },
+  { id: "adult", label: "18+", types: ["NSFW"] },
+  { id: "other", label: "Інше", types: ["Others", "Music", "AudioBook", "CustomMedia"] },
 ] as const;
 
 export function matchesContentType(types: string[], filter: string): boolean {
@@ -22,6 +22,6 @@ export function contentTypeLabels(types: string[]): string {
   return (
     CONTENT_TYPES.filter((group) => matchesContentType(types, group.id))
       .map((group) => group.label)
-      .join(" · ") || "Unspecified content"
+      .join(" · ") || "Різне"
   );
 }

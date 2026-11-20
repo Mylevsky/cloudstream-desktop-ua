@@ -13,10 +13,10 @@
   const urlQuery = () => page.url.searchParams.get("q") ?? "";
 
   const TYPE_GROUPS: Record<string, string[]> = {
-    Movies: ["Movie", "AnimeMovie"],
-    Series: ["TvSeries", "AsianDrama", "Cartoon", "Documentary"],
-    Anime: ["Anime", "OVA", "AnimeMovie"],
-    Live: ["Live"],
+    Фільми: ["Movie", "AnimeMovie"],
+    Серіали: ["TvSeries", "AsianDrama", "Cartoon", "Documentary"],
+    Аніме: ["Anime", "OVA", "AnimeMovie"],
+    "Прямий ефір": ["Live"],
   };
   const matches = (i: SearchItem) => !st.type || TYPE_GROUPS[st.type].includes(i.type ?? "");
   const visible = $derived(
@@ -24,6 +24,15 @@
   );
   const resultCount = $derived(visible.reduce((total, group) => total + group.items.length, 0));
   const submittedQuery = $derived(urlQuery().trim());
+
+  function formatResultsCount(count: number): string {
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    if (mod100 >= 11 && mod100 <= 19) return `${count} результатів`;
+    if (mod10 === 1) return `${count} результат`;
+    if (mod10 >= 2 && mod10 <= 4) return `${count} результати`;
+    return `${count} результатів`;
+  }
 
   function submit(e: SubmitEvent) {
     e.preventDefault();
@@ -48,47 +57,44 @@
 
 <div class="page">
   <div class="page-heading">
-    <h1 class="page-title">Search</h1>
+    <h1 class="page-title">Пошук</h1>
     <p>
-      {provider ? `Find a title on ${provider}.` : "Find a title across your providers."}
+      {provider
+        ? `Пошук тайтлів на ${provider}.`
+        : "Пошук тайтлів за всіма підключеними джерелами."}
     </p>
   </div>
   <form class="box" onsubmit={submit} role="search">
     <Search size={20} strokeWidth={1.8} aria-hidden="true" />
     <input
       type="search"
-      placeholder={provider ? `Search ${provider}` : "Search every provider"}
+      placeholder={provider ? `Шукати на ${provider}` : "Пошук за всіма джерелами"}
       bind:value={st.draft}
       enterkeyhint="search"
-      aria-label="Search"
+      aria-label="Пошук"
     />
-    <button
-      class="search-submit"
-      type="submit"
-      disabled={!st.draft.trim()}
-      aria-label="Submit search"
-    >
+    <button class="search-submit" type="submit" disabled={!st.draft.trim()} aria-label="Шукати">
       <Search size={18} strokeWidth={1.8} aria-hidden="true" />
-      <span>Search</span>
+      <span>Шукати</span>
     </button>
   </form>
 
   {#if provider}
     <div class="search-scope">
-      <span>Searching in <strong>{provider}</strong></span>
+      <span>Пошук у <strong>{provider}</strong></span>
       <a href={`/search${submittedQuery ? `?${new URLSearchParams({ q: submittedQuery })}` : ""}`}
-        >Search all providers</a
+        >Шукати у всіх джерелах</a
       >
     </div>
   {/if}
 
   {#if submittedQuery}
-    <div class="scroll-x filters" role="group" aria-label="Filter search results">
+    <div class="scroll-x filters" role="group" aria-label="Фільтр результатів пошуку">
       <button
         class="chip"
         class:on={st.type === null}
         aria-pressed={st.type === null}
-        onclick={() => (st.type = null)}>All</button
+        onclick={() => (st.type = null)}>Всі</button
       >
       {#each Object.keys(TYPE_GROUPS) as t (t)}
         <button
@@ -106,8 +112,8 @@
       {#if st.searching}<span class="spinner" aria-hidden="true"></span>{/if}
       <span
         >{st.searching
-          ? `Searching for “${submittedQuery}”…`
-          : `${resultCount} ${resultCount === 1 ? "result" : "results"} for “${submittedQuery}”`}</span
+          ? `Пошук «${submittedQuery}»…`
+          : `${formatResultsCount(resultCount)} за запитом «${submittedQuery}»`}</span
       >
     {/if}
   </div>
@@ -132,8 +138,8 @@
   {#if !st.searching && !page.url.searchParams.get("q")}
     <div class="empty search-empty">
       <Search size={36} strokeWidth={1.8} aria-hidden="true" />
-      <h2>What are you in the mood for?</h2>
-      <p>Search for a movie, series, or anime to get started.</p>
+      <h2>Що ви хочете подивитися?</h2>
+      <p>Введіть назву фільму, серіалу чи аніме для початку пошуку.</p>
     </div>
   {/if}
 
@@ -141,20 +147,22 @@
     <div class="empty search-empty">
       <Search size={32} strokeWidth={1.8} aria-hidden="true" />
       <h2>
-        {st.errors.length && !st.results.length ? "Search couldn’t finish" : "No matching titles"}
+        {st.errors.length && !st.results.length
+          ? "Не вдалося завершити пошук"
+          : "Нічого не знайдено"}
       </h2>
       <p>
         {st.type && st.results.length
-          ? `Try another content type or show all results.`
+          ? `Спробуйте вибрати інший тип контенту або показати всі результати.`
           : st.errors.length && !st.results.length
-            ? "A provider couldn’t be reached. Try your search again."
-            : "Try a different title or check the spelling."}
+            ? "Не вдалося отримати відповідь від джерела. Спробуйте ще раз."
+            : "Спробуйте змінити пошуковий запит або перевірити написання."}
       </p>
       {#if st.type}
-        <button class="btn" onclick={() => (st.type = null)}>Show all results</button>
+        <button class="btn" onclick={() => (st.type = null)}>Показати всі результати</button>
       {:else if st.errors.length}
         <button class="btn" onclick={() => st.run(submittedQuery, provider, true)}
-          ><RefreshCw size={16} aria-hidden="true" /> Try again</button
+          ><RefreshCw size={16} aria-hidden="true" /> Спробувати знову</button
         >
       {/if}
     </div>
@@ -164,7 +172,9 @@
     <details class="errors">
       <summary
         >{st.errors.length}
-        {st.errors.length === 1 ? "provider" : "providers"} failed</summary
+        {st.errors.length === 1
+          ? "джерело повернуло помилку"
+          : "джерела повернули помилку"}</summary
       >
       {#each st.errors as e (e.provider)}<div>
           <b>{e.provider}</b>: {e.error}

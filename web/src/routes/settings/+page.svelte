@@ -67,12 +67,12 @@
   }));
 
   const categories = [
-    { id: "playback", label: "Playback", icon: Play },
-    { id: "priority", label: "Source priority", icon: ListOrdered },
-    { id: "content", label: "Content", icon: Shield },
-    { id: "browser", label: "Browser", icon: Globe },
-    { id: "plugins", label: "Plugins", icon: Layers },
-    { id: "devices", label: "Account & devices", icon: Smartphone },
+    { id: "playback", label: "Відтворення", icon: Play },
+    { id: "priority", label: "Пріоритет джерел", icon: ListOrdered },
+    { id: "content", label: "Контент", icon: Shield },
+    { id: "browser", label: "Браузер", icon: Globe },
+    { id: "plugins", label: "Плагіни", icon: Layers },
+    { id: "devices", label: "Акаунт і пристрої", icon: Smartphone },
   ];
   const availableCategories = categories;
   const activeCategory = $derived(
@@ -127,9 +127,9 @@
   }
 
   const modes: { id: BrowserMode; label: string }[] = [
-    { id: "headless", label: "Headless (no window)" },
-    { id: "xvfb", label: "Virtual display (Xvfb)" },
-    { id: "headed", label: "Visible window" },
+    { id: "headless", label: "Фоновий (без вікна)" },
+    { id: "xvfb", label: "Віртуальний дисплей (Xvfb)" },
+    { id: "headed", label: "Видиме вікно" },
   ];
 
   /** The server stops a running browser so the next request starts it in the new mode. */
@@ -139,16 +139,16 @@
   }
 
   function browserState(b: BrowserStatus) {
-    if (!b.executable) return "Chromium isn't installed";
-    if (!b.running) return "Not running; it starts when a plugin needs it";
-    return `Running ${b.mode === "headed" ? "in a visible window" : b.mode === "xvfb" ? "on a virtual display" : "headless"}`;
+    if (!b.executable) return "Chromium не встановлено";
+    if (!b.running) return "Не запущено; запускається за потреби плагіна";
+    return `Працює ${b.mode === "headed" ? "у видимому вікні" : b.mode === "xvfb" ? "на віртуальному дисплеї" : "у фоновому режимі"}`;
   }
 
   /** A loaded plugin that won't fully link against this runtime. */
   const linkWarning = (p: PluginInfo) =>
     p.runtimeLinkage ??
     (p.linkage.length
-      ? `${p.linkage.length} call${p.linkage.length > 1 ? "s" : ""} into the runtime won't link, e.g. ${p.linkage[0]}`
+      ? `${p.linkage.length} ${p.linkage.length === 1 ? "виклик" : "викликів"} середовища не зв'язано, напр. ${p.linkage[0]}`
       : null);
 
   async function setEnabled(target: PluginInfo, enabled: boolean) {
@@ -167,7 +167,7 @@
         client.setQueryData(["status"], host);
         const plugin = list.find((p) => p.id === id);
         if (!plugin)
-          throw new Error(`${name} is no longer in this source. Refresh the plugin list.`);
+          throw new Error(`${name} більше немає в цьому джерелі. Оновіть список плагінів.`);
         const settled =
           plugin.enabled === enabled &&
           (enabled
@@ -178,17 +178,18 @@
         if (settled) {
           if (enabled && plugin.status !== "loaded") {
             throw new Error(
-              plugin.error ?? `${name} could not be loaded. Check its details and try again.`,
+              plugin.error ??
+                `Не вдалося завантажити ${name}. Перевірте відомості та спробуйте знову.`,
             );
           }
-          toasts.show(`${name} ${enabled ? "enabled" : "disabled"}`);
+          toasts.show(`${name} ${enabled ? "увімкнено" : "вимкнено"}`);
           return;
         }
         await new Promise((resolve) => setTimeout(resolve, 750));
       }
       if (!disposed)
         throw new Error(
-          `${name} is taking longer than expected. Refresh the plugin list to check its status.`,
+          `Завантаження ${name} триває довше, ніж очікувалося. Оновіть список, щоб перевірити стан.`,
         );
     } catch (e) {
       if (!disposed) {
@@ -206,7 +207,7 @@
 
   async function rebuild() {
     await api.rebuild().catch(toasts.error);
-    toasts.show("Rebuilding plugins…");
+    toasts.show("Перезбирання плагінів…");
     client.invalidateQueries({ queryKey: ["status"] });
   }
 
@@ -240,16 +241,16 @@
   }
 
   const sources: { id: PluginSourceMode; label: string }[] = [
-    { id: "repo", label: "Online repo (published plugins)" },
-    { id: "dev", label: "Local extensions repo (built with gradle)" },
+    { id: "repo", label: "Онлайн-репозиторій (опубліковані плагіни)" },
+    { id: "dev", label: "Локальний репозиторій розширень (gradle)" },
   ];
 
   const ago = (t: number) => {
     const m = Math.round((Date.now() - t) / 60000);
-    if (m < 1) return "just now";
-    if (m < 60) return `${m} min ago`;
-    if (m < 1440) return `${Math.round(m / 60)} h ago`;
-    return new Date(t).toLocaleDateString();
+    if (m < 1) return "щойно";
+    if (m < 60) return `${m} хв тому`;
+    if (m < 1440) return `${Math.round(m / 60)} год тому`;
+    return new Date(t).toLocaleDateString("uk-UA");
   };
 
   const src = $derived(source.data);
@@ -272,7 +273,11 @@
     }
   }
   async function removeRepo(u: string) {
-    if (!confirm(`Remove this repository? Plugins installed from it are removed too.\n\n${u}`))
+    if (
+      !confirm(
+        `Видалити цей репозиторій? Плагіни, встановлені з нього, також буде видалено.\n\n${u}`,
+      )
+    )
       return;
     await setSource({ plugin_repo_urls: repoUrls.filter((x) => x !== u) });
     if (selectedRepo === u) selectedRepo = null;
@@ -304,14 +309,14 @@
   async function savePassword(event: SubmitEvent) {
     event.preventDefault();
     if (newPassword !== confirmPassword) {
-      toasts.show("The new passwords don't match.", true);
+      toasts.show("Нові паролі не збігаються.", true);
       return;
     }
     savingPassword = true;
     try {
       await api.setPassword(newPassword, authInfo.data?.passwordSet ? currentPassword : undefined);
       currentPassword = newPassword = confirmPassword = "";
-      toasts.show("Password saved. Other devices were signed out.");
+      toasts.show("Пароль збережено. На інших пристроях виконано вихід.");
       await Promise.all([authInfo.refetch(), sessions.refetch()]);
     } catch (e) {
       toasts.error(e);
@@ -320,7 +325,8 @@
     }
   }
   async function revokeAll() {
-    if (!confirm("Sign out all devices connected to this server, including this browser?")) return;
+    if (!confirm("Вийти з усіх пристроїв, підключених до цього сервера, включно з цим браузером?"))
+      return;
     try {
       await api.revokeAll();
       location.reload();
@@ -383,26 +389,26 @@
   }
 </script>
 
-<svelte:head><title>Settings · Cloudstream</title></svelte:head>
+<svelte:head><title>Налаштування · Cloudstream</title></svelte:head>
 
 <div class="page settings-page">
   <header class="settings-heading">
     <div>
-      <h1 class="page-title">Settings</h1>
-      <p>Make Cloudstream work your way.</p>
+      <h1 class="page-title">Налаштування</h1>
+      <p>Налаштуйте Cloudstream за власними уподобаннями.</p>
     </div>
     {#if activeCategory !== "priority" && activeCategory !== "devices"}
       <p class={["save-status", { failed: saveState === "error" }]} role="status">
-        {#if pendingSaves}<span class="spinner"></span> Saving…
-        {:else if saveState === "error"}Could not save. Try again.
-        {:else if saveState === "saved"}<Check size={15} aria-hidden="true" /> Changes saved
-        {:else}Changes save automatically{/if}
+        {#if pendingSaves}<span class="spinner"></span> Збереження…
+        {:else if saveState === "error"}Не вдалося зберегти. Спробуйте знову.
+        {:else if saveState === "saved"}<Check size={15} aria-hidden="true" /> Зміни збережено
+        {:else}Зміни зберігаються автоматично{/if}
       </p>
     {/if}
   </header>
 
   <div class="settings-layout">
-    <nav class="settings-nav" aria-label="Settings categories">
+    <nav class="settings-nav" aria-label="Категорії налаштувань">
       {#each availableCategories as category (category.id)}
         <a
           href="#settings-{category.id}"
@@ -418,43 +424,44 @@
     <div class="settings-content">
       {#if settings.isPending}
         <div class="loading-settings" role="status">
-          <span class="sr-only">Loading settings…</span>
+          <span class="sr-only">Завантаження налаштувань…</span>
           <div></div>
           <div></div>
           <div></div>
         </div>
       {:else if settings.isError}
         <div class="load-error" role="alert">
-          <h2>Could not load settings</h2>
-          <p>Check your connection to the desktop and try again.</p>
-          <button class="btn" onclick={() => settings.refetch()}>Try again</button>
+          <h2>Не вдалося завантажити налаштування</h2>
+          <p>Перевірте підключення до сервера та спробуйте знову.</p>
+          <button class="btn" onclick={() => settings.refetch()}>Спробувати знову</button>
         </div>
       {/if}
 
       <section hidden={activeCategory !== "devices"} aria-labelledby="devices-heading">
-        <h2 id="devices-heading">Account & devices</h2>
+        <h2 id="devices-heading">Акаунт і пристрої</h2>
         <p class="muted">
-          Sign in on a new device using its own sign-in code. Sessions last 30 days.
+          Увійдіть на новому пристрої за допомогою коду авторизації. Сесії діють 30 днів.
         </p>
         {#if authInfo.data?.mode === "local"}
           <div class="setting-row">
             <span class="setting-copy"
-              ><b>Approve a device</b><small class="muted"
-                >Enter the code a TV, phone, or browser shows on its sign-in screen.</small
+              ><b>Підтвердити пристрій</b><small class="muted"
+                >Введіть код, який відображається на екрані телевізора, смартфона чи браузера.</small
               ></span
             >
-            <a class="btn" href="/activate">Enter a code</a>
+            <a class="btn" href="/activate">Ввести код</a>
           </div>
-          <h3>{authInfo.data.passwordSet ? "Change password" : "Set a password"}</h3>
+          <h3>{authInfo.data.passwordSet ? "Змінити пароль" : "Встановити пароль"}</h3>
           <p class="muted">
-            Optional. With a password you can sign in directly over HTTPS or on this computer,
-            without approving from another device. Saving it signs out every other device.
+            Необов'язково. За допомогою пароля ви зможете авторизуватися напряму через HTTPS або на
+            цьому комп'ютері без підтвердження з іншого пристрою. Збереження пароля виконує вихід на
+            всіх інших пристроях.
           </p>
           <form class="password-form" onsubmit={savePassword}>
             <input type="text" autocomplete="username" value="cloudstream" hidden readonly />
             {#if authInfo.data.passwordSet}
               <label
-                >Current password<input
+                >Поточний пароль<input
                   type="password"
                   autocomplete="current-password"
                   bind:value={currentPassword}
@@ -464,17 +471,17 @@
               >
             {/if}
             <label
-              >New password<input
+              >Новий пароль<input
                 type="password"
                 autocomplete="new-password"
                 bind:value={newPassword}
                 required
                 minlength="12"
                 maxlength="256"
-              /><small class="muted">At least 12 characters.</small></label
+              /><small class="muted">Щонайменше 12 символів.</small></label
             >
             <label
-              >Confirm new password<input
+              >Підтвердьте новий пароль<input
                 type="password"
                 autocomplete="new-password"
                 bind:value={confirmPassword}
@@ -484,39 +491,37 @@
               /></label
             >
             <button class="btn" disabled={savingPassword}
-              >{savingPassword ? "Saving…" : "Save password"}</button
+              >{savingPassword ? "Збереження…" : "Зберегти пароль"}</button
             >
           </form>
         {/if}
         {#if authInfo.data?.workerUrl}
           <p>
             <a class="btn" href={authInfo.data.workerUrl} target="_blank" rel="noopener noreferrer"
-              >Manage account</a
+              >Керувати акаунтом</a
             >
           </p>
         {/if}
-        <h3>Signed-in devices</h3>
-        {#if sessions.isPending}<p role="status">Loading devices…</p>
-        {:else if sessions.isError}<p role="alert">Could not load devices.</p>
-          <button class="btn" onclick={() => sessions.refetch()}>Try again</button>
+        <h3>Підключені пристрої</h3>
+        {#if sessions.isPending}<p role="status">Завантаження пристроїв…</p>
+        {:else if sessions.isError}<p role="alert">Не вдалося завантажити пристрої.</p>
+          <button class="btn" onclick={() => sessions.refetch()}>Спробувати знову</button>
         {:else}
           {#each sessions.data ?? [] as session (session.id)}
             <div class="setting-row">
               <span class="setting-copy"
-                ><b>{session.name}{session.current ? " (this device)" : ""}</b><small class="muted"
-                  >Expires {new Date(session.expiresAt).toLocaleDateString()}</small
+                ><b>{session.name}{session.current ? " (цей пристрій)" : ""}</b><small class="muted"
+                  >Діє до {new Date(session.expiresAt).toLocaleDateString("uk-UA")}</small
                 ></span
               >
-              <button class="btn" onclick={() => revoke(session.id, session.current)}
-                >Sign out</button
-              >
+              <button class="btn" onclick={() => revoke(session.id, session.current)}>Вийти</button>
             </div>
           {/each}
         {/if}
         <div class="setting-row">
-          <button class="btn" onclick={signOut}>Sign out this browser</button><button
+          <button class="btn" onclick={signOut}>Вийти з цього браузера</button><button
             class="btn"
-            onclick={revokeAll}>Sign out all devices</button
+            onclick={revokeAll}>Вийти з усіх пристроїв</button
           >
         </div>
       </section>
@@ -525,14 +530,16 @@
         {@const s = settings.data}
         <section hidden={activeCategory !== "playback"} aria-labelledby="playback-heading">
           <div class="section-heading">
-            <h2 id="playback-heading">Playback</h2>
-            <p>Choose how streams start and what happens next.</p>
+            <h2 id="playback-heading">Відтворення</h2>
+            <p>Налаштуйте запуск потоків та поведінку плеєра.</p>
           </div>
-          <h3>Casting</h3>
+          <h3>Трансляція</h3>
           <label class="setting-row">
             <span class="setting-copy"
-              ><b>This device's name</b>
-              <small class="muted">How it shows in other devices' Play on list.</small></span
+              ><b>Назва цього пристрою</b>
+              <small class="muted"
+                >Як цей пристрій відображається в меню трансляції на інших пристроях.</small
+              ></span
             >
             <input
               type="text"
@@ -543,8 +550,9 @@
           </label>
           <label class="toggle">
             <span
-              ><b>Allow casting to this browser</b><small
-                >Other paired devices can play here, and control it, while this tab is open.</small
+              ><b>Дозволити трансляцію на цей браузер</b><small
+                >Інші підключені пристрої можуть відтворювати відео тут та керувати ним, доки
+                вкладка відкрита.</small
               ></span
             >
             <input
@@ -555,20 +563,21 @@
             />
           </label>
           <details class="advanced">
-            <summary>Browser player <ChevronDown size={17} aria-hidden="true" /></summary>
+            <summary>Вбудований плеєр браузера <ChevronDown size={17} aria-hidden="true" /></summary
+            >
             <div class="advanced-fields">
               <label class="setting-row">
-                <span class="setting-copy"><b>Double-tap and arrow-key seek</b></span>
+                <span class="setting-copy"><b>Перемотка стрілками та подвійним дотиком</b></span>
                 <select
                   value={String(prefs.value.seekStep)}
                   onchange={(e) => prefs.update({ seekStep: Number(e.currentTarget.value) })}
                 >
-                  {#each [5, 10, 15, 30] as n (n)}<option value={String(n)}>{n} seconds</option
+                  {#each [5, 10, 15, 30] as n (n)}<option value={String(n)}>{n} секунд</option
                     >{/each}
                 </select>
               </label>
               <label class="setting-row">
-                <span class="setting-copy"><b>Speed while holding the video</b></span>
+                <span class="setting-copy"><b>Швидкість при утриманні відео</b></span>
                 <select
                   value={String(prefs.value.holdSpeed)}
                   onchange={(e) => prefs.update({ holdSpeed: Number(e.currentTarget.value) })}
@@ -578,7 +587,9 @@
               </label>
               <label class="toggle">
                 <span
-                  ><b>Swipe sideways to seek</b><small>Drag across the video to scrub.</small></span
+                  ><b>Свайп вліво/вправо для перемотки</b><small
+                    >Проведіть пальцем по відео для швидкої перемотки.</small
+                  ></span
                 >
                 <input
                   type="checkbox"
@@ -589,8 +600,8 @@
               </label>
               <label class="toggle">
                 <span
-                  ><b>Swipe up and down for volume and brightness</b><small
-                    >Touch screens: right half for volume, left half for brightness.</small
+                  ><b>Свайп вгору/вниз для гучності та яскравості</b><small
+                    >Сенсорні екрани: права частина для гучності, ліва для яскравості.</small
                   ></span
                 >
                 <input
@@ -605,7 +616,7 @@
                 />
               </label>
               <label class="setting-row">
-                <span class="setting-copy"><b>Subtitle size</b></span>
+                <span class="setting-copy"><b>Розмір субтитрів</b></span>
                 <select
                   value={String(prefs.value.subtitleScale)}
                   onchange={(e) => prefs.update({ subtitleScale: Number(e.currentTarget.value) })}
@@ -617,8 +628,8 @@
               </label>
               <label class="toggle">
                 <span
-                  ><b>Subtitles on a dark box</b><small
-                    >Instead of an outline. ASS subtitles keep their own styling.</small
+                  ><b>Субтитри на темній підкладці</b><small
+                    >Замість контуру тексту. ASS субтитри зберігають власний стиль.</small
                   ></span
                 >
                 <input
@@ -630,8 +641,8 @@
               </label>
               <label class="toggle">
                 <span
-                  ><b>Picture-in-picture when leaving the tab</b><small
-                    >Keeps the video playing in a small window, where the browser supports it.</small
+                  ><b>Картинка в картинці при переході з вкладки</b><small
+                    >Продовжує відтворення у плаваючому вікні (якщо підтримується браузером).</small
                   ></span
                 >
                 <input
@@ -643,12 +654,12 @@
               </label>
             </div>
           </details>
-          <h3>Auto-play</h3>
+          <h3>Автовідтворення</h3>
           <label class="toggle">
             <span
-              ><b>Auto-play the best link</b><small
-                >Starts as soon as a link has priority 10 or more; the rest keep loading in the
-                background.</small
+              ><b>Автовідтворення найкращого посилання</b><small
+                >Починає відтворення, щойно пріоритет посилання становить 10 або більше; решта
+                довантажується у фоні.</small
               ></span
             >
             <input
@@ -659,7 +670,7 @@
             />
           </label>
           <label class="toggle">
-            <span><b>Play the next episode automatically</b></span>
+            <span><b>Автоматично відтворювати наступну серію</b></span>
             <input
               type="checkbox"
               role="switch"
@@ -667,31 +678,33 @@
               onchange={(e) => save({ autoplay_next: e.currentTarget.checked })}
             />
           </label>
-          <h3>Episode segments</h3>
+          <h3>Сегменти серій</h3>
           <label class="setting-row">
             <span class="setting-copy"
-              ><b>Skip anime openings and endings</b>
+              ><b>Пропускати опенінги та ендінги в аніме</b>
               <small class="muted"
-                >Times come from AniSkip, for providers that give the MyAnimeList or AniList id.
-                They also show as chapters in mpv.</small
+                >Часові мітки завантажуються з AniSkip для підтримуваних провайдерів. Також
+                відображаються як розділи в mpv.</small
               ></span
             >
             <select
               value={s.skip_segments}
               onchange={(e) => save({ skip_segments: e.currentTarget.value as SkipMode })}
             >
-              <option value="prompt">Offer a Skip button</option>
-              <option value="auto">Skip automatically</option>
-              <option value="off">Off</option>
+              <option value="prompt">Показувати кнопку «Пропустити»</option>
+              <option value="auto">Пропускати автоматично</option>
+              <option value="off">Вимкнено</option>
             </select>
           </label>
           <details class="advanced">
-            <summary>Advanced playback <ChevronDown size={17} aria-hidden="true" /></summary>
+            <summary
+              >Додаткові параметри відтворення <ChevronDown size={17} aria-hidden="true" /></summary
+            >
             <div class="advanced-fields">
               <label class="toggle">
                 <span
-                  ><b>Send every stream through the proxy</b><small
-                    >Only needed when a site rejects mpv's direct requests.</small
+                  ><b>Пропускати всі потоки через проксі-сервер</b><small
+                    >Потрібно лише у випадках, коли сайт блокує прямі запити плеєра.</small
                   ></span
                 >
                 <input
@@ -702,9 +715,10 @@
                 />
               </label>
               <label class="stack">
-                <b>Extra mpv options</b>
+                <b>Додаткові параметри mpv</b>
                 <small class="muted"
-                  >Applied the next time mpv starts, e.g. <code>--profile=gpu-hq --fullscreen</code
+                  >Застосовується під час наступного запуску mpv, наприклад <code
+                    >--profile=gpu-hq --fullscreen</code
                   ></small
                 >
                 <input
@@ -721,22 +735,22 @@
 
         <section hidden={activeCategory !== "priority"} aria-labelledby="priority-heading">
           <div class="section-heading">
-            <h2 id="priority-heading">Source priority</h2>
-            <p>Set which sources and video qualities play first.</p>
+            <h2 id="priority-heading">Пріоритет джерел</h2>
+            <p>Налаштуйте, які джерела та якість відео запускаються першими.</p>
           </div>
           <SourceProfiles settings={s} />
         </section>
 
         <section hidden={activeCategory !== "content"} aria-labelledby="content-heading">
           <div class="section-heading">
-            <h2 id="content-heading">Content</h2>
-            <p>Choose which providers appear in Cloudstream.</p>
+            <h2 id="content-heading">Контент</h2>
+            <p>Налаштуйте, які джерела відображаються в Cloudstream.</p>
           </div>
           <label class="toggle">
             <span
-              ><b>Show NSFW providers</b><small
-                >Off hides them from home, search and the plugin list. NSFW content is never added
-                to history. Applies to this device only.</small
+              ><b>Показувати джерела для дорослих (18+)</b><small
+                >Вимкнення приховує їх з головної, пошуку та списку плагінів. Такий контент не
+                додається до історії. Застосовується лише на цьому пристрої.</small
               ></span
             >
             <input
@@ -754,12 +768,12 @@
       {/if}
 
       {#if activeCategory === "browser" && browser.isPending}
-        <p class="muted" role="status">Loading browser status…</p>
+        <p class="muted" role="status">Завантаження стану браузера…</p>
       {:else if activeCategory === "browser" && browser.isError}
         <div class="load-error" role="alert">
-          <h2>Could not load browser status</h2>
-          <p>Check your connection and try again.</p>
-          <button class="btn" onclick={() => browser.refetch()}>Try again</button>
+          <h2>Не вдалося завантажити стан браузера</h2>
+          <p>Перевірте з'єднання та спробуйте знову.</p>
+          <button class="btn" onclick={() => browser.refetch()}>Спробувати знову</button>
         </div>
       {/if}
       {#if settings.data && browser.data}
@@ -767,25 +781,25 @@
         <section hidden={activeCategory !== "browser"} aria-labelledby="browser-heading">
           <div class="row-head">
             <div class="section-heading">
-              <h2 id="browser-heading">Browser</h2>
-              <p>Handle sites that need a real browser.</p>
+              <h2 id="browser-heading">Браузер</h2>
+              <p>Обробка сайтів, які потребують повноцінного браузера.</p>
             </div>
             {#if b.running}<button class="btn" onclick={() => browserAction(api.stopBrowser)}
-                ><Square size={16} strokeWidth={1.8} aria-hidden="true" /> Stop</button
+                ><Square size={16} strokeWidth={1.8} aria-hidden="true" /> Зупинити</button
               >{/if}
           </div>
           <p class="muted small">
-            Chromium passes Cloudflare checks and loads pages that need a real browser. {browserState(
-              b,
-            )}.
+            Chromium проходить перевірки Cloudflare та завантажує сторінки складних захищених
+            сайтів. {browserState(b)}.
           </p>
           {#if b.error}<div class="p-error flush">{b.error}</div>{/if}
           <label class="stack">
-            <b>Mode</b>
+            <b>Режим</b>
             <small class="muted"
-              >Cloudflare's Turnstile often refuses headless browsers. A virtual display passes more
-              checks without a window; a visible window lets you click through them yourself. Checks
-              that still fail show a Solve button.</small
+              >Cloudflare Turnstile часто відхиляє повністю фонові браузери. Віртуальний дисплей
+              успішно проходить більшість перевірок без вікна; видиме вікно дозволяє пройти
+              перевірку самостійно. Якщо перевірка потребує втручання, з'явиться кнопка розв'язання
+              капчі.</small
             >
             <select
               value={settings.data.chromium_mode}
@@ -796,16 +810,17 @@
           </label>
           {#if b.clearances.length}
             <div class="stack">
-              <b>Saved Cloudflare clearances</b>
+              <b>Збережені дозволи Cloudflare</b>
               <small class="muted"
-                >Reused until the site refuses them. Forget one to solve it again.</small
+                >Використовуються повторно, доки сайт їх приймає. Видаліть запис, щоб пройти
+                перевірку знову.</small
               >
               <ul class="hosts">
                 {#each b.clearances as host (host)}
                   <li>
                     <span>{host}</span><button
                       class="link-btn"
-                      onclick={() => browserAction(() => api.forgetClearance(host))}>Forget</button
+                      onclick={() => browserAction(() => api.forgetClearance(host))}>Забути</button
                     >
                   </li>
                 {/each}
@@ -818,8 +833,8 @@
       <section hidden={activeCategory !== "plugins"} aria-labelledby="plugins-heading">
         <div class="row-head">
           <div class="section-heading">
-            <h2 id="plugins-heading">Plugins</h2>
-            <p>Manage the plugins that bring your providers to Cloudstream.</p>
+            <h2 id="plugins-heading">Плагіни</h2>
+            <p>Керуйте плагінами, які надають джерела для Cloudstream.</p>
           </div>
           {#if repo}
             <button
@@ -829,11 +844,11 @@
             >
               {#if working === "check" || (working === null && status.data?.building)}<span
                   class="spinner"
-                ></span> Checking…{:else}<RefreshCw
+                ></span> Перевірка…{:else}<RefreshCw
                   size={18}
                   strokeWidth={1.8}
                   aria-hidden="true"
-                /> Check for updates{/if}
+                /> Перевірити оновлення{/if}
             </button>
           {:else if src}
             <button
@@ -841,20 +856,20 @@
               onclick={rebuild}
               disabled={status.data?.building || changingPlugins || !src.devAvailable}
             >
-              {#if status.data?.building}<span class="spinner"></span> Building…{:else}<RefreshCw
+              {#if status.data?.building}<span class="spinner"></span> Збирання…{:else}<RefreshCw
                   size={18}
                   strokeWidth={1.8}
                   aria-hidden="true"
-                /> Rebuild{/if}
+                /> Перезібрати{/if}
             </button>
           {/if}
         </div>
         {#if settings.data && src}
           <div class="plugin-source">
             <label class="stack">
-              <b>Plugin source</b>
+              <b>Джерело плагінів</b>
               {#if !status.data?.loopback}<small class="muted"
-                  >Only the desktop can change where plugins come from.</small
+                  >Лише серверний додаток може змінювати джерело плагінів.</small
                 >{/if}
               <select
                 value={src.mode}
@@ -870,13 +885,13 @@
                 {#each sources as o (o.id)}<option
                     value={o.id}
                     disabled={o.id === "dev" && !src.devAvailable}
-                    >{o.label}{o.id === "dev" && !src.devAvailable ? " (not found)" : ""}</option
+                    >{o.label}{o.id === "dev" && !src.devAvailable ? " (не знайдено)" : ""}</option
                   >{/each}
               </select>
             </label>
             <details class="source-details">
               <summary
-                >{repo ? "Repository details" : "Local build details"}<ChevronDown
+                >{repo ? "Відомості про репозиторій" : "Відомості про локальну збірку"}<ChevronDown
                   size={16}
                   aria-hidden="true"
                 /></summary
@@ -884,32 +899,33 @@
               {#if repo}
                 <div class="stack">
                   <small class="muted"
-                    >Plugins are kept per repository. Removing a repository removes its plugins.</small
+                    >Плагіни прив'язані до репозиторіїв. Видалення репозиторію призводить до
+                    видалення його плагінів.</small
                   >
                 </div>
                 <p class="muted small">
-                  {src.repoName ?? "The repo"}{src.checkedAt
-                    ? `, checked ${ago(src.checkedAt)}`
+                  {src.repoName ?? "Репозиторій"}{src.checkedAt
+                    ? `, перевірено ${ago(src.checkedAt)}`
                     : ""}.
-                  {#if status.data}{status.data.loaded} of {status.data.plugins} loaded.{/if}
-                  Downloaded jars are checked against the repo's hashes; the last two versions of each
-                  are kept for rollback.
+                  {#if status.data}Завантажено {status.data.loaded} з {status.data.plugins}.{/if}
+                  Завантажені JAR-файли звіряються за контрольними сумами; останні дві версії зберігаються
+                  для відкату.
                 </p>
               {:else}
                 <p class="muted small">
-                  Built from <code>{src.devPath}</code>. Any new
-                  <code>&lt;Name&gt;/build/&lt;Name&gt;.jar</code>
-                  there is reloaded automatically, so Rebuild (or
-                  <code>./gradlew :Name:make</code>
-                  for cross-platform plugins) is enough.
-                  {#if status.data}{status.data.loaded} of {status.data.plugins} loaded.{/if}
+                  Зібрано з <code>{src.devPath}</code>. Будь-який новий
+                  <code>&lt;Назва&gt;/build/&lt;Назва&gt;.jar</code>
+                  перезавантажується автоматично, тому команди Перезібрати (або
+                  <code>./gradlew :Назва:make</code>
+                  для крос-платформних плагінів) достатньо.
+                  {#if status.data}Завантажено {status.data.loaded} з {status.data.plugins}.{/if}
                   <button
                     class="link-btn"
                     onclick={async () => (log = log === null ? await api.buildLog() : null)}
-                    >{log === null ? "Show build log" : "Hide build log"}</button
+                    >{log === null ? "Показати журнал збірки" : "Сховати журнал збірки"}</button
                   >
                 </p>
-                {#if log !== null}<pre class="log">{log || "No build has run yet."}</pre>{/if}
+                {#if log !== null}<pre class="log">{log || "Збирання ще не запускалося."}</pre>{/if}
               {/if}
             </details>
             {#if src.updates.length}
@@ -918,11 +934,11 @@
                 onclick={() => repoAction("all", () => api.updatePlugins())}
                 disabled={working !== null || changingPlugins || status.data?.building}
               >
-                {#if working === "all"}<span class="spinner"></span> Updating…{:else}<ChevronDown
+                {#if working === "all"}<span class="spinner"></span> Оновлення…{:else}<ChevronDown
                     size={18}
                     strokeWidth={1.8}
                     aria-hidden="true"
-                  /> Update {src.updates.length} plugin{src.updates.length > 1 ? "s" : ""}{/if}
+                  /> Оновити плагіни ({src.updates.length}){/if}
               </button>
             {/if}
             {#if src.error}<div class="p-error flush" role="alert">{src.error}</div>{/if}
@@ -933,8 +949,8 @@
           <div class="repositories">
             <div class="repositories-heading">
               <div>
-                <h3>Repositories <span>{repoUrls.length}</span></h3>
-                <p>Select a repository to manage its plugins.</p>
+                <h3>Репозиторії <span>{repoUrls.length}</span></h3>
+                <p>Виберіть репозиторій для керування його плагінами.</p>
               </div>
             </div>
             <div class="repository-list">
@@ -972,14 +988,14 @@
                   </button>
                   <button
                     class="repository-remove"
-                    aria-label="Remove repository {info?.name || hostOf(u)}"
+                    aria-label="Видалити репозиторій {info?.name || hostOf(u)}"
                     disabled={changingPlugins || working !== null || status.data?.building}
                     onclick={() => removeRepo(u)}><Trash2 size={19} aria-hidden="true" /></button
                   >
                 </div>
               {/each}
               {#if !repoUrls.length}<p class="repository-empty">
-                  No repositories added yet. Add one below to get started.
+                  Репозиторії ще не додані. Додайте посилання нижче.
                 </p>{/if}
             </div>
             <form
@@ -990,10 +1006,10 @@
               }}
             >
               <label class="repo-input">
-                <span>Add a repository</span>
+                <span>Додати репозиторій</span>
                 <input
                   type="text"
-                  placeholder="Repository URL or shortcode"
+                  placeholder="URL репозиторію або короткий код"
                   disabled={changingPlugins || working !== null || status.data?.building}
                   bind:value={newRepoUrl}
                 />
@@ -1004,11 +1020,12 @@
                 disabled={!newRepoUrl.trim() ||
                   changingPlugins ||
                   working !== null ||
-                  status.data?.building}>{working === "add-repo" ? "Loading…" : "Add"}</button
+                  status.data?.building}
+                >{working === "add-repo" ? "Завантаження…" : "Додати"}</button
               >
             </form>
             {#if working === "add-repo"}<p class="muted small" role="status">
-                Loading repository…
+                Завантаження репозиторію…
               </p>{/if}
           </div>
         {:else}
@@ -1021,7 +1038,7 @@
                   openPlugin = null;
                 }}
               >
-                <ArrowLeft size={18} aria-hidden="true" /> Repositories</button
+                <ArrowLeft size={18} aria-hidden="true" /> Репозиторії</button
               >
               <h3>
                 {src?.repos?.find((r) => r.url === selectedRepo)?.name || hostOf(selectedRepo)}
@@ -1030,16 +1047,16 @@
           {/if}
           {#if plugins.isPending}
             <div class="plugin-skeleton" role="status">
-              <span class="sr-only">Loading plugins…</span>
+              <span class="sr-only">Завантаження плагінів…</span>
               {#each [0, 1, 2] as row (row)}<div><span></span><span></span></div>{/each}
             </div>
           {:else if plugins.isError}
             <div class="plugin-empty" role="alert">
-              <p>Could not load plugins. Check your connection and try again.</p>
-              <button class="btn" onclick={() => plugins.refetch()}>Try again</button>
+              <p>Не вдалося завантажити плагіни. Перевірте з'єднання та спробуйте знову.</p>
+              <button class="btn" onclick={() => plugins.refetch()}>Спробувати знову</button>
             </div>
           {:else if !scopedPlugins.length}
-            <p class="muted small">No plugins found in this source.</p>
+            <p class="muted small">У цьому джерелі плагінів не знайдено.</p>
           {:else}
             <div class="plugin-tools">
               <label class="plugin-search">
@@ -1047,34 +1064,34 @@
                 <input
                   type="search"
                   bind:value={pluginSearch}
-                  placeholder="Search plugins or providers"
-                  aria-label="Search plugins or providers"
+                  placeholder="Пошук плагінів або джерел"
+                  aria-label="Пошук плагінів або джерел"
                 />
               </label>
-              <select bind:value={pluginFilter} aria-label="Filter plugins">
-                <option value="all">All plugins</option>
-                <option value="enabled">Enabled</option>
-                <option value="disabled">Disabled</option>
-                <option value="attention">Needs attention</option>
+              <select bind:value={pluginFilter} aria-label="Фільтр плагінів">
+                <option value="all">Усі плагіни</option>
+                <option value="enabled">Увімкнені</option>
+                <option value="disabled">Вимкнені</option>
+                <option value="attention">Потребують уваги</option>
               </select>
             </div>
             <div class="plugin-list-heading">
               <p class="plugin-count" aria-live="polite">
                 {pluginSearch.trim() || pluginFilter !== "all"
-                  ? `${visiblePlugins.length} of ${scopedPlugins.length}`
-                  : scopedPlugins.length} plugins
+                  ? `${visiblePlugins.length} з ${scopedPlugins.length}`
+                  : scopedPlugins.length} плагінів
               </p>
-              <span>{scopedPlugins.filter((p) => p.status === "loaded").length} loaded</span>
+              <span>{scopedPlugins.filter((p) => p.status === "loaded").length} завантажено</span>
             </div>
             {#if !visiblePlugins.length}
               <div class="plugin-empty">
-                <p>No plugins match your search and filter.</p>
+                <p>Жоден плагін не відповідає пошуку та фільтрам.</p>
                 <button
                   class="link-btn"
                   onclick={() => {
                     pluginSearch = "";
                     pluginFilter = "all";
-                  }}>Clear search and filter</button
+                  }}>Очистити пошук і фільтри</button
                 >
               </div>
             {/if}
@@ -1116,12 +1133,11 @@
                             ><b>{p.name}</b><ChevronDown size={15} aria-hidden="true" /></span
                           >
                           <span class="plugin-meta"
-                            >{p.version != null
-                              ? `v${p.version}`
-                              : "Version unavailable"}{hasUpdate(p) ? ` → v${p.available}` : ""}{p
-                              .providers.length
-                              ? ` · ${p.providers.join(", ")}`
-                              : ""}{p.nsfw ? " · NSFW" : ""}</span
+                            >{p.version != null ? `v${p.version}` : "Версія невідома"}{hasUpdate(p)
+                              ? ` → v${p.available}`
+                              : ""}{p.providers.length ? ` · ${p.providers.join(", ")}` : ""}{p.nsfw
+                              ? " · 18+"
+                              : ""}</span
                           >
                         </span>
                       </button>
@@ -1133,7 +1149,7 @@
                             disabled={working !== null || changingPlugins || status.data?.building}
                           >
                             {#if updating}<span class="spinner" aria-hidden="true"
-                              ></span>{/if}{p.status === "missing" ? "Install" : "Update"}
+                              ></span>{/if}{p.status === "missing" ? "Встановити" : "Оновити"}
                           </button>
                         {/if}
                         <label class="plugin-toggle">
@@ -1147,7 +1163,7 @@
                               }
                             }
                             disabled={busy || working !== null || status.data?.building}
-                            aria-label="Enable {p.name}"
+                            aria-label="Увімкнути {p.name}"
                             aria-describedby="plugin-state-{p.id}"
                           />
                         </label>
@@ -1157,19 +1173,20 @@
                       {#if busy}<p class="p-progress">
                           {changing
                             ? pluginChanges[p.id]
-                              ? "Loading the plugin and its providers…"
-                              : "Unloading the plugin and its providers…"
-                            : "Downloading and loading the plugin…"}
+                              ? "Завантаження плагіна та його джерел…"
+                              : "Вимкнення плагіна та його джерел…"
+                            : "Завантаження та активація плагіна…"}
                         </p>
                       {:else if pluginErrors[p.id] || p.error}<p class="p-error">
                           <CircleAlert size={15} aria-hidden="true" />{pluginErrors[p.id] ||
                             p.error}
                         </p>
                       {:else if p.status === "error"}<p class="p-error">
-                          <CircleAlert size={15} aria-hidden="true" />Failed to load this plugin.
+                          <CircleAlert size={15} aria-hidden="true" />Не вдалося завантажити цей
+                          плагін.
                         </p>
                       {:else if p.status === "missing"}<p class="p-warn">
-                          <CircleAlert size={15} aria-hidden="true" />Plugin not installed.
+                          <CircleAlert size={15} aria-hidden="true" />Плагін не встановлено.
                         </p>
                       {:else if warning}<p class="p-warn">
                           <CircleAlert size={15} aria-hidden="true" />{linkWarning(p)}
@@ -1188,7 +1205,7 @@
                             class="link-btn"
                             onclick={() => repoAction(p.id, () => api.rollbackPlugin(p.id))}
                             disabled={working !== null || changingPlugins || status.data?.building}
-                            >Roll back to v{p.previous}</button
+                            >Відкотити до v{p.previous}</button
                           >
                         {/if}
                         {#if p.status === "loaded" && !busy}<PluginSettings

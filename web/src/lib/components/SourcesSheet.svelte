@@ -95,7 +95,7 @@
 {#if sources.open && t}
   <dialog
     class="sheet"
-    aria-label="Sources"
+    aria-label="Джерела"
     {@attach modal}
     oncancel={() => sources.hide()}
     onclick={(event) => {
@@ -113,18 +113,18 @@
     <div class="grab"></div>
     <header>
       <div class="head-text">
-        <h2>Sources</h2>
+        <h2>Джерела</h2>
         <div class="muted ellipsis">
           {t.title}{t.label ? ` · ${t.label}` : ""}
-          {playTarget.remote ? ` · on ${playTarget.label}` : ""}
+          {playTarget.remote ? ` · на ${playTarget.label}` : ""}
         </div>
       </div>
       <button
         class="close"
         onclick={() => sources.load(t, true)}
         disabled={!sources.done}
-        aria-label="Reload links"
-        title="Reload links"
+        aria-label="Оновити посилання"
+        title="Оновити посилання"
         ><RefreshCw
           size={20}
           strokeWidth={1.8}
@@ -132,7 +132,7 @@
           aria-hidden="true"
         /></button
       >
-      <button class="close" onclick={() => sources.hide()} aria-label="Close"
+      <button class="close" onclick={() => sources.hide()} aria-label="Закрити"
         ><X size={22} strokeWidth={1.8} aria-hidden="true" /></button
       >
     </header>
@@ -146,25 +146,26 @@
           />
         {:else if settings.isError}
           <p class="err">
-            Could not load source profiles. <button class="btn" onclick={() => settings.refetch()}
-              >Retry</button
+            Не вдалося завантажити профілі джерел. <button
+              class="btn"
+              onclick={() => settings.refetch()}>Повторити</button
             >
           </p>
-        {:else}<p class="muted">Loading source profiles…</p>{/if}
+        {:else}<p class="muted">Завантаження профілів джерел…</p>{/if}
       </div>
       <div class="status">
         {#if !sources.done}
           <div class="spinner"></div>
-          <span>Finding links… {sources.links.length} so far</span>
+          <span>Пошук посилань… знайдено: {sources.links.length}</span>
         {:else if sources.error && !sources.links.length}
           <TriangleAlert size={18} strokeWidth={1.8} aria-hidden="true" /><span class="err"
             >{sources.error}</span
           >
         {:else}
-          <span>{visible.length} links from {groups.length} sources</span>
+          <span>Посилання: {visible.length} з {groups.length} джерел</span>
         {/if}
         {#if visible.length < sources.links.length}<span
-            >{sources.links.length - visible.length} hidden by profile</span
+            >{sources.links.length - visible.length} приховано профілем</span
           >{/if}
         {#if statusMessage}
           <span class="accent">· {statusMessage}</span>
@@ -173,7 +174,8 @@
 
       {#if sources.done && sources.links.length && !visible.length}
         <p class="empty">
-          This profile hides every link. Choose another profile or edit its visibility settings.
+          Цей профіль приховує всі посилання. Виберіть інший профіль або змініть налаштування
+          видимості.
         </p>
       {/if}
       {#each groups as g (g.source)}
@@ -203,15 +205,15 @@
                     <span class={["q", { hd: l.quality >= 720 && l.quality !== AUTO_QUALITY }]}
                       >{l.qualityLabel}</span
                     >
-                    <span class="type">{l.type} · priority {linkPriority(l, profile)}</span>
+                    <span class="type">{l.type} · пріоритет {linkPriority(l, profile)}</span>
                     {#if failed.has(l.id) && l.id !== currentLink}
-                      <span class="tag bad">Failed</span>
+                      <span class="tag bad">Помилка</span>
                     {:else if l.id === currentLink}
                       <span class="tag selected"
-                        ><Check size={14} strokeWidth={2} aria-hidden="true" /> Playing</span
+                        ><Check size={14} strokeWidth={2} aria-hidden="true" /> Грає</span
                       >
                     {:else if l.id === best}
-                      <span class="tag">Best</span>
+                      <span class="tag">Краще</span>
                     {/if}
                   </span>
                   <span class="link-name"
@@ -221,10 +223,10 @@
                     <span class="details">{l.name.slice(detailAt + 3)}</span>
                   {/if}
                   <span class="host"
-                    >{l.host}{l.proxied ? " · proxied" : ""}{l.drm
+                    >{l.host}{l.proxied ? " · проксі" : ""}{l.drm
                       ? l.playable
                         ? " · ClearKey"
-                        : " · DRM (unsupported)"
+                        : " · DRM (не підтримується)"
                       : ""}</span
                   >
                 </span>
@@ -239,11 +241,11 @@
       <div class="subs">
         <button class="subs-head" onclick={() => (subsOpen = !subsOpen)}>
           <Captions size={18} strokeWidth={1.8} aria-hidden="true" />
-          <span>Subtitles ({sources.subtitles.length})</span>
+          <span>Субтитри ({sources.subtitles.length})</span>
           <span class="muted"
             >{sources.chosenSubs.length
-              ? `${sources.chosenSubs.length} chosen`
-              : "English added automatically"}</span
+              ? `Вибрано: ${sources.chosenSubs.length}`
+              : "Субтитри"}</span
           >
         </button>
         {#if subsOpen}

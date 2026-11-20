@@ -68,8 +68,8 @@
     <h2 class="section-title">{section.name}</h2>
     {#if row.isError}
       <div class="row-error">
-        <p class="muted">Couldn't load this row: {row.error?.message}</p>
-        <button class="btn" onclick={() => row.refetch()}>Try again</button>
+        <p class="muted">Не вдалося завантажити цей рядок: {row.error?.message}</p>
+        <button class="btn" onclick={() => row.refetch()}>Спробувати знову</button>
       </div>
     {:else}
       <LoadingSkeleton horizontal={section.horizontal} />

@@ -60,7 +60,7 @@
         ]),
       );
       files = withSchema((await api.savePluginSettings(id, clean)).files);
-      toasts.show(`Saved ${name} settings`);
+      toasts.show(`Налаштування ${name} збережено`);
     } catch (e) {
       toasts.error(e);
     } finally {
@@ -94,7 +94,7 @@
                 value={value || f.default || ""}
                 onchange={(e) => setValue(f, e.currentTarget.value)}
               >
-                {#if !f.default}<option value="">Not set</option>{/if}
+                {#if !f.default}<option value="">Не встановлено</option>{/if}
                 {#each f.options as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
               </select>
             {:else}
@@ -106,7 +106,7 @@
                       ? "password"
                       : "text"}
                   {value}
-                  placeholder={f.default ? `Default: ${f.default}` : "Not set"}
+                  placeholder={f.default ? `За замовчуванням: ${f.default}` : "Не встановлено"}
                   oninput={(e) => setValue(f, e.currentTarget.value)}
                   autocomplete="off"
                 />
@@ -118,7 +118,7 @@
                       (revealed = revealed.includes(fieldId(f))
                         ? revealed.filter((id) => id !== fieldId(f))
                         : [...revealed, fieldId(f)])}
-                    >{revealed.includes(fieldId(f)) ? "Hide" : "Show"}</button
+                    >{revealed.includes(fieldId(f)) ? "Приховати" : "Показати"}</button
                   >
                 {/if}
               </span>
@@ -127,7 +127,7 @@
         {/if}
       </div>
     {/each}
-    {#if schema.length}<div class="file other">Other</div>{/if}
+    {#if schema.length}<div class="file other">Інше</div>{/if}
     {#each Object.entries(files) as [file, entries] (file)}
       {#if Object.keys(files).length > 1}<div class="file">{file}</div>{/if}
       {#each entries as e, i (i)}
@@ -136,13 +136,13 @@
             <input
               class="key"
               bind:value={e.key}
-              placeholder="key"
-              aria-label="Key"
+              placeholder="ключ"
+              aria-label="Ключ"
               readonly={e.default != null}
             />
             {#if e.type === "boolean"}
-              <select bind:value={e.value} aria-label="Value">
-                <option value="">default</option>
+              <select bind:value={e.value} aria-label="Значення">
+                <option value="">за замовчуванням</option>
                 <option value="true">true</option>
                 <option value="false">false</option>
               </select>
@@ -150,20 +150,20 @@
               <input
                 class="val"
                 bind:value={e.value}
-                placeholder={e.default ? `default: ${e.default}` : "unset"}
+                placeholder={e.default ? `за замовчуванням: ${e.default}` : "не встановлено"}
                 type={/key|token|secret|password/i.test(e.key) ? "password" : "text"}
-                aria-label="Value of {e.key}"
+                aria-label="Значення {e.key}"
               />
             {/if}
           </div>
         {/if}
       {/each}
       {#if !entries.length}<p class="muted small">
-          This plugin hasn't read any settings yet. Use it once, or add a key by hand.
+          Цей плагін ще не зчитував налаштувань. Запустіть його хоча б раз або додайте ключ вручну.
         </p>{/if}
-      <button class="link-btn" onclick={() => add(file)}>+ Add key</button>
+      <button class="link-btn" onclick={() => add(file)}>+ Додати ключ</button>
     {/each}
-    <div><button class="btn primary" onclick={save} disabled={saving}>Save</button></div>
+    <div><button class="btn primary" onclick={save} disabled={saving}>Зберегти</button></div>
   </div>
 {:else}
   <div class="spinner"></div>

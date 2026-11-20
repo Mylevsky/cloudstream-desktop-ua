@@ -35,7 +35,7 @@
   async function cancelTask(id: string) {
     try {
       await api.cancelDownload(id);
-      toasts.show("Cancelled download");
+      toasts.show("Завантаження скасовано");
       await client.invalidateQueries({ queryKey: ["downloads"] });
     } catch (e) {
       toasts.error(e);
@@ -45,7 +45,7 @@
   async function clearCompleted() {
     try {
       await api.clearCompletedDownloads();
-      toasts.show("Cleared finished downloads");
+      toasts.show("Завершені завантаження очищено");
       await client.invalidateQueries({ queryKey: ["downloads"] });
     } catch (e) {
       toasts.error(e);
@@ -53,7 +53,7 @@
   }
 
   function formatEp(t: DownloadTask): string {
-    if (t.kind === "movie") return "Movie";
+    if (t.kind === "movie") return "Фільм";
     const s = t.season != null ? `S${String(t.season).padStart(2, "0")}` : "S01";
     const e = t.episode != null ? `E${String(t.episode).padStart(2, "0")}` : "E01";
     return `${s}${e}`;
@@ -61,7 +61,7 @@
 </script>
 
 <svelte:head>
-  <title>Downloads · Cloudstream Desktop</title>
+  <title>Завантаження · Cloudstream Desktop</title>
 </svelte:head>
 
 <div class="downloads-page">
@@ -69,12 +69,12 @@
     <div class="title-group">
       <h1>
         <Download size={26} strokeWidth={2} aria-hidden="true" />
-        Downloads
+        Завантаження
       </h1>
       <p class="subtitle">
-        Saved to external storage for Jellyfin
+        Збереження на зовнішній диск для Jellyfin
         {#if activeCount > 0}
-          <span class="active-badge">{activeCount} active</span>
+          <span class="active-badge">{activeCount} активних</span>
         {/if}
       </p>
     </div>
@@ -84,17 +84,17 @@
         <button
           class="btn secondary"
           onclick={clearCompleted}
-          title="Clear completed and failed tasks"
+          title="Очистити завершені та невдалі завдання"
         >
           <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
-          Clear finished
+          Очистити завершені
         </button>
       {/if}
       <button
         class="btn icon-only"
         onclick={() => client.invalidateQueries({ queryKey: ["downloads"] })}
-        aria-label="Refresh downloads"
-        title="Refresh downloads"
+        aria-label="Оновити завантаження"
+        title="Оновити завантаження"
       >
         <RefreshCw size={18} strokeWidth={1.8} aria-hidden="true" />
       </button>
@@ -106,10 +106,10 @@
   {:else if tasks.length === 0}
     <div class="empty-state">
       <HardDrive size={48} strokeWidth={1.5} aria-hidden="true" />
-      <h2>No downloads in queue</h2>
+      <h2>Черга завантажень порожня</h2>
       <p>
-        Browse any movie or TV show, and click the <b>Download</b> or <b>Download Season</b> button to
-        save it for Jellyfin.
+        Перейдіть до фільму або серіалу та натисніть кнопку <b>Завантажити</b> або
+        <b>Завантажити сезон</b>, щоб зберегти для Jellyfin.
       </p>
     </div>
   {:else}
@@ -129,11 +129,11 @@
               <div class="task-meta">
                 {#if task.status === "queued"}
                   <span class="status-tag queued">
-                    <Clock size={13} strokeWidth={2} aria-hidden="true" /> Queued
+                    <Clock size={13} strokeWidth={2} aria-hidden="true" /> У черзі
                   </span>
                 {:else if task.status === "resolving"}
                   <span class="status-tag resolving">
-                    <Loader2 size={13} class="spin" strokeWidth={2} aria-hidden="true" /> Resolving source...
+                    <Loader2 size={13} class="spin" strokeWidth={2} aria-hidden="true" /> Пошук джерела...
                   </span>
                 {:else if task.status === "downloading"}
                   <span class="status-tag downloading">
@@ -144,21 +144,21 @@
                     <span class="meta-item">{task.speed}</span>
                   {/if}
                   {#if task.eta}
-                    <span class="meta-item">ETA: {task.eta}</span>
+                    <span class="meta-item">Залишилось: {task.eta}</span>
                   {/if}
                 {:else if task.status === "completed"}
                   <span class="status-tag completed">
-                    <CheckCircle2 size={13} strokeWidth={2} aria-hidden="true" /> Completed
+                    <CheckCircle2 size={13} strokeWidth={2} aria-hidden="true" /> Завершено
                   </span>
                 {:else if task.status === "failed"}
                   <span class="status-tag failed">
-                    <XCircle size={13} strokeWidth={2} aria-hidden="true" /> Failed
+                    <XCircle size={13} strokeWidth={2} aria-hidden="true" /> Помилка
                   </span>
                   {#if task.error}
                     <span class="error-msg" title={task.error}>{task.error}</span>
                   {/if}
                 {:else if task.status === "cancelled"}
-                  <span class="status-tag cancelled">Cancelled</span>
+                  <span class="status-tag cancelled">Скасовано</span>
                 {/if}
 
                 {#if task.filePath}
@@ -175,9 +175,9 @@
                 <button
                   class="btn cancel-btn"
                   onclick={() => cancelTask(task.id)}
-                  title="Cancel download"
+                  title="Скасувати завантаження"
                 >
-                  Cancel
+                  Скасувати
                 </button>
               {/if}
             </div>

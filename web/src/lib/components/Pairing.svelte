@@ -42,7 +42,8 @@
       info = await api.authStatus();
       if (info.authed) location.reload();
     } catch (e) {
-      error = e instanceof Error ? e.message : "Could not reach the server. Try again.";
+      error =
+        e instanceof Error ? e.message : "Не вдалося підключитися до сервера. Спробуйте знову.";
     }
   }
   async function start() {
@@ -63,13 +64,13 @@
         remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
         if (!remaining) {
           stop();
-          error = "This code expired. Request a new code to continue.";
+          error = "Термін дії коду минув. Отримайте новий код для продовження.";
         }
       }, 1000);
       timer = setTimeout(() => poll(next, current), next.interval * 1000);
     } catch (e) {
       if (current === generation)
-        error = e instanceof Error ? e.message : "Could not start sign-in. Try again.";
+        error = e instanceof Error ? e.message : "Не вдалося розпочати вхід. Спробуйте знову.";
     } finally {
       busy = false;
     }
@@ -91,7 +92,7 @@
         error = e.message;
         return;
       }
-      error = e instanceof Error ? e.message : "Connection interrupted. Retrying…";
+      error = e instanceof Error ? e.message : "Зв'язок перервано. Повторна спроба…";
     }
     timer = setTimeout(() => poll(next, current), next.interval * 1000);
   }
@@ -105,7 +106,7 @@
       await api.login(local ? "" : username, secret, deviceName);
       location.reload();
     } catch (e) {
-      error = e instanceof Error ? e.message : "Sign-in failed. Try again.";
+      error = e instanceof Error ? e.message : "Помилка входу. Спробуйте знову.";
     } finally {
       busy = false;
     }
@@ -125,29 +126,29 @@
 <main class="sign-in">
   <div class="content">
     <img class="brand" src="/favicon.svg" alt="Cloudstream" width="48" height="48" />
-    <h1>Sign in to Cloudstream</h1>
-    <p class="intro">{info?.serverName ?? "Your sources and library, on this device."}</p>
+    <h1>Вхід до Cloudstream</h1>
+    <p class="intro">{info?.serverName ?? "Ваші джерела та медіатека на цьому пристрої."}</p>
     {#if notice}<p class="error" role="alert">{notice}</p>{/if}
     {#if info?.claimable}
       <p role="status">
-        Nobody is signed in to this server yet. Open the one-time sign-in link printed in the
-        server's log: the terminal running it, or <code>docker logs</code> for Docker. Restart the server
-        if the link has expired.
+        На цьому сервері ще ніхто не авторизований. Відкрийте одноразове посилання для входу з
+        журналу сервера: у терміналі або через <code>docker logs</code> для Docker. Перезапустіть сервер,
+        якщо термін дії посилання минув.
       </p>
-      <button class="btn" onclick={load}>Check again</button>
+      <button class="btn" onclick={load}>Перевірити знову</button>
     {:else if info && !info.configured}
       <p role="status">
-        Authentication needs to be set up on this server. Configure the Worker address and service
-        secret, then restart the server.
+        На цьому сервері потрібно налаштувати автентифікацію. Налаштуйте адресу Worker та секрет
+        сервісу, потім перезапустіть сервер.
       </p>
-      <button class="btn" onclick={load}>Check again</button>
+      <button class="btn" onclick={load}>Перевірити знову</button>
     {:else if info}
       {#if method === "code"}
         {#if grant}
           <p>
             {local
-              ? "On a device that's already signed in to this server, open this address and approve the code below."
-              : "Open this address on another device, sign in, and enter the code below."}
+              ? "На пристрої, де ви вже авторизовані на цьому сервері, відкрийте цю адресу та підтвердьте код нижче."
+              : "Відкрийте цю адресу на іншому пристрої, увійдіть та введіть код нижче."}
           </p>
           <a
             class="activation"
@@ -160,7 +161,7 @@
             {grant.userCode.slice(3)}
           </div>
           <div class="waiting">
-            <span role="status">Waiting for approval</span>
+            <span role="status">Очікування підтвердження</span>
             <span aria-live="off">
               · {Math.floor(remaining / 60)}:{String(remaining % 60).padStart(2, "0")}</span
             >
@@ -168,25 +169,25 @@
           {#if qr}<img
               class="qr"
               src={qr}
-              alt="QR code to open the sign-in page"
+              alt="QR-код для відкриття сторінки входу"
               width="176"
               height="176"
             />{/if}
-          <button class="btn" onclick={start} disabled={busy}>Get a new code</button>
+          <button class="btn" onclick={start} disabled={busy}>Отримати новий код</button>
         {:else}
           <p>
             {local
-              ? "Get a code, then approve this browser from a device that's already signed in."
-              : "Sign in on another device to connect this browser."}
+              ? "Отримайте код, потім підтвердьте цей браузер із пристрою, де ви вже увійшли."
+              : "Увійдіть на іншому пристрої, щоб підключити цей браузер."}
           </p>
           <button class="btn primary" onclick={start} disabled={busy}
-            >{busy ? "Getting a code…" : "Get a sign-in code"}</button
+            >{busy ? "Отримання коду…" : "Отримати код для входу"}</button
           >
         {/if}
       {:else}
         <form onsubmit={login}>
           {#if !local}<label
-              >Username<input
+              >Ім'я користувача<input
                 bind:value={username}
                 autocomplete="username"
                 required
@@ -195,7 +196,7 @@
               /></label
             >{/if}
           <label
-            >Password<input
+            >Пароль<input
               bind:value={password}
               type="password"
               autocomplete="current-password"
@@ -204,21 +205,21 @@
               disabled={busy}
             /></label
           >
-          <button class="btn primary" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+          <button class="btn primary" disabled={busy}>{busy ? "Вхід…" : "Увійти"}</button>
         </form>
       {/if}
       {#if passwordAvailable}<button class="method" onclick={switchMethod} disabled={busy}
           >{method === "code"
             ? local
-              ? "Use your password"
-              : "Use username and password"
-            : "Sign in on another device"}</button
+              ? "Використати пароль"
+              : "Використати логін і пароль"
+            : "Увійти через інший пристрій"}</button
         >{/if}
     {:else if !error}
-      <p role="status">Connecting to the server…</p>
+      <p role="status">Підключення до сервера…</p>
     {/if}
     {#if error}<p class="error" role="alert">{error}</p>
-      {#if !info}<button class="btn" onclick={load}>Try again</button>{/if}{/if}
+      {#if !info}<button class="btn" onclick={load}>Спробувати знову</button>{/if}{/if}
   </div>
 </main>
 

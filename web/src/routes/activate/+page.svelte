@@ -15,7 +15,7 @@
   /** Loopback addresses mean the request came from the server's own machine. */
   function describe(address: string) {
     if (/^(127\.|::1$|0:0:0:0:0:0:0:1$|::ffff:127\.)/.test(address) || address === "localhost")
-      return "the server's own computer";
+      return "власний комп'ютер сервера";
     return address;
   }
 
@@ -26,7 +26,7 @@
     try {
       request = await api.lookupDevice(normalized);
     } catch (e) {
-      error = e instanceof Error ? e.message : "Could not find that code.";
+      error = e instanceof Error ? e.message : "Не вдалося знайти цей код.";
     } finally {
       busy = false;
     }
@@ -38,7 +38,7 @@
       await api.approveDevice(normalized, approve);
       result = approve ? "approved" : "declined";
     } catch (e) {
-      error = e instanceof Error ? e.message : "Could not finish. Try again.";
+      error = e instanceof Error ? e.message : "Не вдалося завершити дію. Спробуйте знову.";
     } finally {
       busy = false;
     }
@@ -56,64 +56,68 @@
       // A code from the QR link: look it up straight away, the decision still needs a tap.
       if (info.mode === "local" && normalized.length === 6) await lookup();
     } catch (e) {
-      error = e instanceof Error ? e.message : "Could not reach the server.";
+      error = e instanceof Error ? e.message : "Не вдалося з'єднатися із сервером.";
     }
   });
 </script>
 
-<svelte:head><title>Approve a device · Cloudstream</title></svelte:head>
+<svelte:head><title>Підтвердити пристрій · Cloudstream</title></svelte:head>
 
 <section class="page" aria-labelledby="activate-heading">
   <div class="page-heading">
-    <h1 class="page-title" id="activate-heading">Approve a device</h1>
-    <p>Let a TV, phone, or browser sign in to this server.</p>
+    <h1 class="page-title" id="activate-heading">Підтвердити пристрій</h1>
+    <p>Дозвольте телевізору, смартфону або браузеру авторизуватися на цьому сервері.</p>
   </div>
   <div class="activate">
     {#if info && info.mode !== "local"}
       <p>
-        This server signs devices in through your Cloudstream account. Approve codes on the account
-        site instead.
+        Цей сервер авторизує пристрої через акаунт Cloudstream. Підтверджуйте коди на сайті
+        керування акаунтом.
       </p>
       {#if info.workerUrl}<a class="btn" href={`${info.workerUrl}/activate`}
-          >Open the account site</a
+          >Відкрити сайт акаунта</a
         >{/if}
     {:else if result}
       <p role="status">
         {result === "approved"
-          ? `${request?.deviceName ?? "The device"} is now signed in. It may take a few seconds to continue.`
-          : "Declined. That device has to request a new code to try again."}
+          ? `${request?.deviceName ?? "Пристрій"} успішно авторизовано. За кілька секунд сесія почнеться.`
+          : "Відхилено. Пристрою необхідно згенерувати новий код для повторної спроби."}
       </p>
-      <button class="btn" onclick={another}>Approve another device</button>
+      <button class="btn" onclick={another}>Підтвердити інший пристрій</button>
     {:else if request}
       <p class="device">
-        <b>{request.deviceName}</b> wants to sign in to {info?.serverName ?? "this server"}.
+        <b>{request.deviceName}</b> запитує авторизацію на {info?.serverName ?? "цьому сервері"}.
       </p>
       <dl>
-        <dt>Code</dt>
+        <dt>Код</dt>
         <dd class="code">{normalized.slice(0, 3)} {normalized.slice(3)}</dd>
-        <dt>Requested from</dt>
+        <dt>Запит від</dt>
         <dd>{describe(request.address)}</dd>
-        <dt>Requested at</dt>
+        <dt>Час запиту</dt>
         <dd>
-          {new Date(request.requestedAt).toLocaleTimeString([], {
+          {new Date(request.requestedAt).toLocaleTimeString("uk-UA", {
             hour: "numeric",
             minute: "2-digit",
           })}
         </dd>
       </dl>
       <p class="warning">
-        Approve only if this code is on a screen in front of you. Anyone who gets approved can use
-        this server for 30 days.
+        Підтверджуйте запит лише в тому разі, якщо цей код відображається на екрані перед вами.
+        Будь-який підтверджений пристрій отримує доступ на 30 днів.
       </p>
       <div class="actions">
-        <button class="btn primary" onclick={() => decide(true)} disabled={busy}>Approve</button>
-        <button class="btn" onclick={() => decide(false)} disabled={busy}>Decline</button>
+        <button class="btn primary" onclick={() => decide(true)} disabled={busy}>Підтвердити</button
+        >
+        <button class="btn" onclick={() => decide(false)} disabled={busy}>Відхилити</button>
       </div>
     {:else if info}
-      <p>Enter the six-character code shown on your TV, phone, or browser.</p>
+      <p>
+        Введіть шестизначний код, який відображається на вашому телевізорі, смартфоні або в
+        браузері.
+      </p>
       <form onsubmit={lookup}>
         <label
-          >Device code<input
+          >Код пристрою<input
             bind:value={code}
             class="code"
             autocomplete="off"
@@ -125,11 +129,11 @@
           /></label
         >
         <button class="btn primary" disabled={busy || normalized.length !== 6}
-          >{busy ? "Checking…" : "Continue"}</button
+          >{busy ? "Перевірка…" : "Продовжити"}</button
         >
       </form>
     {:else if !error}
-      <p role="status">Loading…</p>
+      <p role="status">Завантаження…</p>
     {/if}
     {#if error}<p class="error" role="alert">{error}</p>{/if}
   </div>

@@ -33,8 +33,8 @@
     bind:this={button}
     class={["cast-btn", cls, { on: playTarget.remote }]}
     popovertarget="cast-menu-{id}"
-    aria-label={`Play on: ${playTarget.label}`}
-    title={`Play on: ${playTarget.label}`}
+    aria-label={`Відтворювати на: ${playTarget.label}`}
+    title={`Відтворювати на: ${playTarget.label}`}
     ><Cast size={22} strokeWidth={1.8} aria-hidden="true" /></button
   >
   <div
@@ -44,8 +44,8 @@
     popover="auto"
     ontoggle={(e) => place(e.newState === "open")}
   >
-    <h2>Play on</h2>
-    <div role="radiogroup" aria-label="Play on">
+    <h2>Відтворювати на</h2>
+    <div role="radiogroup" aria-label="Відтворювати на">
       {#each playTarget.options as target (target.id)}
         {@const Icon = DEVICE_ICONS[target.kind]}
         <button
@@ -54,15 +54,15 @@
           aria-checked={playTarget.effective === target.id}
           disabled={target.disabled}
           title={target.busy
-            ? "Another device is playing on this one"
+            ? "Інший пристрій зараз відтворює на ньому"
             : target.disabled
-              ? "mpv isn't available on the server (headless host or mpv.enabled = false)"
+              ? "mpv недоступний на сервері"
               : undefined}
           onclick={() => pick(target.id)}
         >
           <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
           <span class="name">{target.label}</span>
-          {#if target.busy}<span class="busy">In use</span>{/if}
+          {#if target.busy}<span class="busy">Зайнято</span>{/if}
           {#if playTarget.effective === target.id}<Check
               size={18}
               strokeWidth={2}
@@ -72,9 +72,11 @@
       {/each}
     </div>
     {#if !cast.connected}
-      <p class="note">Reconnecting to your other devices…</p>
+      <p class="note">Перепідключення до інших пристроїв…</p>
     {:else if !cast.targets.length}
-      <p class="note">Other devices show up here once they're open and allow casting.</p>
+      <p class="note">
+        Інші пристрої з'являться тут, коли Cloudstream буде відкрито на них і дозволено трансляцію.
+      </p>
     {/if}
   </div>
 {/if}

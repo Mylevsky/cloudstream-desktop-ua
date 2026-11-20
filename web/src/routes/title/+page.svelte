@@ -62,6 +62,13 @@
     });
   }
 
+  const bookmarkLabels: Record<string, string> = {
+    watching: "Дивлюся",
+    planned: "У планах",
+    completed: "Переглянуто",
+    dropped: "Покинуто",
+  };
+
   async function bookmark(list: string | null) {
     if (!d) return;
     try {
@@ -74,7 +81,7 @@
         list,
       });
       client.invalidateQueries({ queryKey: ["details", provider, url] });
-      toasts.show(list ? `Added to ${list}` : "Removed from library");
+      toasts.show(list ? `Додано в «${bookmarkLabels[list] ?? list}»` : "Видалено з медіатеки");
     } catch (e) {
       toasts.error(e);
     }
@@ -158,18 +165,18 @@
 {:else if details.isError}
   <div class="page">
     <div class="empty">
-      <p>Couldn't load this title.</p>
+      <p>Не вдалося завантажити цей тайтл.</p>
       <p class="muted">{details.error.message}</p>
       {#if /^https?:\/\//.test(url)}
         <p class="muted failed-url">{provider} · {url}</p>
       {/if}
       <div class="empty-actions">
         <button class="btn" onclick={() => details.refetch()}
-          ><RefreshCw size={18} strokeWidth={1.8} aria-hidden="true" /> Retry</button
+          ><RefreshCw size={18} strokeWidth={1.8} aria-hidden="true" /> Спробувати знову</button
         >
         {#if /^https?:\/\//.test(url)}
           <a class="btn" href={url} target="_blank" rel="noreferrer"
-            ><ExternalLink size={18} strokeWidth={1.8} aria-hidden="true" /> Open original page</a
+            ><ExternalLink size={18} strokeWidth={1.8} aria-hidden="true" /> Відкрити оригінальну сторінку</a
           >
         {/if}
       </div>
@@ -181,7 +188,7 @@
     style:--hero={d.background || d.poster ? `url("${d.background || d.poster}")` : "none"}
   ></div>
   <div class="page detail">
-    <button class="back" onclick={() => history.back()} aria-label="Go back"
+    <button class="back" onclick={() => history.back()} aria-label="Назад"
       ><ArrowLeft size={18} strokeWidth={1.8} aria-hidden="true" /></button
     >
     <div class="head">
@@ -204,7 +211,7 @@
               {d.score.toFixed(1)}</span
             >{/if}
           {#if d.contentRating}<span class="badge">{d.contentRating}</span>{/if}
-          {#if d.duration}<span>{d.duration} min</span>{/if}
+          {#if d.duration}<span>{d.duration} хв</span>{/if}
           {#if d.showStatus}<span>{d.showStatus}</span>{/if}
           {#if /^https?:\/\//.test(d.url)}
             <a class="muted source-link" href={d.url} target="_blank" rel="noreferrer" title={d.url}
@@ -224,18 +231,18 @@
             <button class="btn primary" onclick={() => play(d, d.movieData!, null)}>
               <Play size={18} fill="currentColor" strokeWidth={1.8} aria-hidden="true" />
               {p && !p.watched && p.position > 30
-                ? `Resume ${formatTime(p.position)}`
+                ? `Продовжити ${formatTime(p.position)}`
                 : d.kind === "live"
-                  ? "Watch live"
-                  : "Play"}
+                  ? "Дивитися наживо"
+                  : "Дивитися"}
             </button>
             <button
               class="btn secondary"
               onclick={() => downloadMovie(d)}
-              title="Download movie for Jellyfin"
+              title="Завантажити фільм для Jellyfin"
             >
               <Download size={18} strokeWidth={1.8} aria-hidden="true" />
-              Download
+              Завантажити
             </button>
           {:else if resumeEp}
             {@const i = byDub.indexOf(resumeEp)}
@@ -245,12 +252,12 @@
             >
               <Play size={18} fill="currentColor" strokeWidth={1.8} aria-hidden="true" />
               {resumeEp.progress && !resumeEp.progress.watched && resumeEp.progress.position > 30
-                ? "Resume"
-                : "Play"}
+                ? "Продовжити"
+                : "Дивитися"}
               {episodeLabel({ ...resumeEp, name: null }, i)}
             </button>
           {:else if d.kind === "torrent"}
-            <span class="muted">Torrents aren't supported.</span>
+            <span class="muted">Торренти не підтримуються.</span>
           {/if}
           <label class={["bm", { saved: !!d.bookmarked }]}>
             <span class="bm-icon"
@@ -264,11 +271,12 @@
             <select
               value={d.bookmarked ?? ""}
               onchange={(e) => bookmark(e.currentTarget.value || null)}
-              aria-label="Library list"
+              aria-label="Список медіатеки"
             >
-              <option value="">{d.bookmarked ? "Remove from library" : "Add to library"}</option>
-              {#each BOOKMARK_LISTS as l (l)}<option value={l}
-                  >{l[0].toUpperCase() + l.slice(1)}</option
+              <option value=""
+                >{d.bookmarked ? "Видалити з медіатеки" : "Додати в медіатеку"}</option
+              >
+              {#each BOOKMARK_LISTS as l (l)}<option value={l}>{bookmarkLabels[l] ?? l}</option
                 >{/each}
             </select>
             <span class="bm-chevron"
@@ -288,11 +296,7 @@
           disabled={!plotOverflows}
           aria-expanded={plotOverflows ? plotExpanded : undefined}
           aria-controls="title-plot"
-          aria-label={plotOverflows
-            ? plotExpanded
-              ? "Collapse description"
-              : "Expand description"
-            : undefined}
+          aria-label={plotOverflows ? (plotExpanded ? "Згорнути опис" : "Читати далі") : undefined}
           onclick={() => (expandedPlotTitle = plotExpanded ? null : titleKey)}
         >
           <span
@@ -312,7 +316,7 @@
             aria-controls="title-plot"
             onclick={() => (expandedPlotTitle = plotExpanded ? null : titleKey)}
           >
-            {plotExpanded ? "Show less" : "Show more"}
+            {plotExpanded ? "Згорнути" : "Читати далі"}
             <span class={["plot-chevron", { expanded: plotExpanded }]}>
               <ChevronDown size={16} strokeWidth={1.8} aria-hidden="true" />
             </span>
@@ -335,7 +339,7 @@
         >
           {#snippet audio(resetFilters: () => void)}
             {#if dubs.length > 1}
-              <div class="seg" role="group" aria-label="Audio version">
+              <div class="seg" role="group" aria-label="Аудіодоріжка">
                 {#each dubs as x (x)}
                   <button
                     aria-pressed={x === activeDub}
@@ -348,7 +352,7 @@
                     {#if x === "Dubbed"}
                       <Volume2 size={15} strokeWidth={1.8} aria-hidden="true" />{:else}
                       <Captions size={15} strokeWidth={1.8} aria-hidden="true" />{/if}
-                    {x === "Dubbed" ? "Dub" : x === "Subbed" ? "Sub" : x}
+                    {x === "Dubbed" ? "Озвучка" : x === "Subbed" ? "Субтитри" : x}
                   </button>
                 {/each}
               </div>
@@ -359,7 +363,7 @@
     {/if}
 
     {#if d.actors.length}
-      <h2 class="section-title">Cast</h2>
+      <h2 class="section-title">Актори</h2>
       <div class="scroll-x cast">
         {#each d.actors.slice(0, 20) as a, i (`${i}:${a.name}${a.role ?? ""}`)}
           <div class="actor">
@@ -379,7 +383,7 @@
     {/if}
 
     {#if d.recommendations.length}
-      <h2 class="section-title">More like this</h2>
+      <h2 class="section-title">Схожі тайтли</h2>
       <div class="scroll-x">
         {#each d.recommendations as r, i (`${i}:${r.url}`)}
           <Poster

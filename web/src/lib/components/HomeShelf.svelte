@@ -51,18 +51,18 @@
       {#if description}<p>{description}</p>{/if}
     </div>
     <div class="actions">
-      {#if href}<a class="view-all" {href} aria-label={`View all ${title}`}
-          >View all <ChevronRight size={16} aria-hidden="true" /></a
+      {#if href}<a class="view-all" {href} aria-label={`Дивитися всі: ${title}`}
+          >Дивитися всі <ChevronRight size={16} aria-hidden="true" /></a
         >{/if}
       <div class="arrows">
         <button
-          aria-label={`Scroll ${title} backward`}
+          aria-label={`Прокрутити ${title} назад`}
           aria-controls="{id}-track"
           disabled={!canBack}
           onclick={() => scroll(-1)}><ChevronLeft size={19} aria-hidden="true" /></button
         >
         <button
-          aria-label={`Scroll ${title} forward`}
+          aria-label={`Прокрутити ${title} вперед`}
           aria-controls="{id}-track"
           disabled={!canForward}
           onclick={() => scroll(1)}><ChevronRight size={19} aria-hidden="true" /></button

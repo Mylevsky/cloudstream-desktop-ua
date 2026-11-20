@@ -106,7 +106,7 @@
 
   function seasonName(n: number) {
     const season = seasons.find((s) => s.season === n);
-    return season?.name ?? (n === 0 ? "Episodes" : `Season ${season?.displaySeason ?? n}`);
+    return season?.name ?? (n === 0 ? "Серії" : `Сезон ${season?.displaySeason ?? n}`);
   }
 
   async function goToPage(value: number, fromBottom = false) {
@@ -143,19 +143,19 @@
 </script>
 
 {#snippet pagination(bottom = false)}
-  <nav class="pagination" aria-label={bottom ? "Episode pages, bottom" : "Episode pages"}>
+  <nav class="pagination" aria-label={bottom ? "Сторінки серій, знизу" : "Сторінки серій"}>
     <button
       class="page-button"
-      aria-label="Previous episode page"
+      aria-label="Попередня сторінка"
       disabled={currentPage === 1}
       onclick={() => goToPage(currentPage - 1, bottom)}
     >
       <ChevronLeft size={18} strokeWidth={1.8} aria-hidden="true" />
     </button>
     <label class="range-picker">
-      <span class="sr-only">Episode range</span>
+      <span class="sr-only">Діапазон серій</span>
       <select
-        aria-label="Episode range"
+        aria-label="Діапазон серій"
         value={currentPage}
         onchange={(e) => goToPage(Number(e.currentTarget.value), bottom)}
       >
@@ -164,10 +164,10 @@
           >{/each}
       </select>
     </label>
-    <span class="page-total">of {filtered.length}</span>
+    <span class="page-total">з {filtered.length}</span>
     <button
       class="page-button"
-      aria-label="Next episode page"
+      aria-label="Наступна сторінка"
       disabled={currentPage === pageCount}
       onclick={() => goToPage(currentPage + 1, bottom)}
     >
@@ -180,12 +180,12 @@
   <div class="episode-heading">
     <div>
       <h2 id="{uid}-heading">
-        <ListVideo size={22} strokeWidth={1.8} aria-hidden="true" /> Episodes
+        <ListVideo size={22} strokeWidth={1.8} aria-hidden="true" /> Серії
         <span class="count">{episodes.length}</span>
       </h2>
       <p>
-        {watched} of {inSeason.length} watched{seasonNumbers.length > 1
-          ? ` in ${seasonName(activeSeason)}`
+        Переглянуто {watched} з {inSeason.length}{seasonNumbers.length > 1
+          ? ` (${seasonName(activeSeason)})`
           : ""}
       </p>
     </div>
@@ -195,9 +195,9 @@
   <div class="toolbar">
     {#if seasonNumbers.length > 1}
       <label class="season-picker">
-        <span class="sr-only">Season</span>
+        <span class="sr-only">Сезон</span>
         <select
-          aria-label="Season"
+          aria-label="Сезон"
           value={activeSeason}
           onchange={(e) => {
             selectedSeason = Number(e.currentTarget.value);
@@ -216,16 +216,18 @@
       <input
         type="search"
         aria-label={seasonNumbers.length > 1
-          ? `Find an episode in ${seasonName(activeSeason)}`
-          : "Find an episode"}
-        placeholder={seasonNumbers.length > 1 ? "Search this season" : "Find by name or number"}
+          ? `Знайти серію в ${seasonName(activeSeason)}`
+          : "Знайти серію"}
+        placeholder={seasonNumbers.length > 1
+          ? "Пошук у цьому сезоні"
+          : "Пошук за назвою або номером"}
         enterkeyhint="search"
         bind:value={search}
       />
     </div>
     {#if nextEpisode}
       <button class="find-next" onclick={findNext}
-        ><ArrowRight size={16} strokeWidth={1.8} aria-hidden="true" /> Jump to next episode</button
+        ><ArrowRight size={16} strokeWidth={1.8} aria-hidden="true" /> До наступної серії</button
       >
     {/if}
   </div>
@@ -233,18 +235,16 @@
   <div class="list-heading">
     <div class="heading-left">
       <span aria-live="polite"
-        >{query
-          ? `${filtered.length} matching episode${filtered.length === 1 ? "" : "s"}`
-          : seasonName(activeSeason)}</span
+        >{query ? `Знайдено серій: ${filtered.length}` : seasonName(activeSeason)}</span
       >
       {#if ondownloadseason && !query && inSeason.length > 0}
         <button
           class="dl-season-btn"
           onclick={() => ondownloadseason(activeSeason)}
-          title="Download entire season for Jellyfin"
+          title="Завантажити весь сезон для Jellyfin"
         >
           <Download size={14} strokeWidth={1.8} aria-hidden="true" />
-          Download Season
+          Завантажити сезон
         </button>
       {/if}
     </div>
@@ -261,7 +261,7 @@
           <button
             class="episode"
             onclick={() => onplay(e, index)}
-            aria-label="Play episode {e.episode ?? index + 1}{e.name ? `: ${e.name}` : ''}"
+            aria-label="Дивитися серію {e.episode ?? index + 1}{e.name ? `: ${e.name}` : ''}"
             aria-current={playing ? "true" : undefined}
             data-next-episode={next ? "" : undefined}
           >
@@ -285,25 +285,25 @@
                 >{/if}
             </span>
             <span class="episode-text">
-              <span class="episode-name">{e.name ?? `Episode ${e.episode ?? index + 1}`}</span>
+              <span class="episode-name">{e.name ?? `Серія ${e.episode ?? index + 1}`}</span>
               <span class="episode-meta">
                 {#if playing}<span class="playing"
-                    ><Volume1 size={13} strokeWidth={1.8} aria-hidden="true" /> Playing</span
+                    ><Volume1 size={13} strokeWidth={1.8} aria-hidden="true" /> Зараз грає</span
                   >
-                {:else if next}<span class="up-next">Up next</span>{/if}
+                {:else if next}<span class="up-next">Наступна</span>{/if}
                 {#if p?.watched}<span class="watched-label"
-                    ><CircleCheck size={13} strokeWidth={1.8} aria-hidden="true" /> Watched</span
+                    ><CircleCheck size={13} strokeWidth={1.8} aria-hidden="true" /> Переглянуто</span
                   >
                 {:else if p && p.position > 30}<span
                     >{p.duration > p.position
-                      ? `${formatTime(p.duration - p.position)} left`
-                      : `${formatTime(p.position)} watched`}</span
+                      ? `${formatTime(p.duration - p.position)} залишилось`
+                      : `${formatTime(p.position)} переглянуто`}</span
                   >{/if}
                 {#if e.runtime}<span
                     ><Clock3 size={13} strokeWidth={1.8} aria-hidden="true" />
-                    {e.runtime} min</span
+                    {e.runtime} хв</span
                   >{/if}
-                {#if e.date}<span>{new Date(e.date).toLocaleDateString()}</span>{/if}
+                {#if e.date}<span>{new Date(e.date).toLocaleDateString("uk-UA")}</span>{/if}
               </span>
               {#if e.description}<span class="episode-description">{e.description}</span>{/if}
             </span>
@@ -312,8 +312,8 @@
             <button
               class="dl-btn"
               onclick={() => ondownload(e)}
-              aria-label="Download {e.name ?? `Episode ${e.episode ?? index + 1}`}"
-              title="Download episode for Jellyfin"
+              aria-label="Завантажити {e.name ?? `серію ${e.episode ?? index + 1}`}"
+              title="Завантажити серію для Jellyfin"
             >
               <Download size={18} strokeWidth={1.8} aria-hidden="true" />
             </button>
@@ -321,9 +321,10 @@
           <button
             class="mark"
             onclick={() => onwatched(e)}
-            aria-label="{p?.watched ? 'Mark unwatched' : 'Mark watched'}: {e.name ??
-              `Episode ${e.episode ?? index + 1}`}"
-            title={p?.watched ? "Mark unwatched" : "Mark watched"}
+            aria-label="{p?.watched
+              ? 'Позначити непереглянутим'
+              : 'Позначити переглянутим'}: {e.name ?? `Серія ${e.episode ?? index + 1}`}"
+            title={p?.watched ? "Позначити непереглянутим" : "Позначити переглянутим"}
             aria-pressed={!!p?.watched}
           >
             {#if p?.watched}<CircleCheck
@@ -338,14 +339,14 @@
   {:else}
     <div class="empty-results">
       <Search size={28} strokeWidth={1.8} aria-hidden="true" />
-      <p>No episodes match “{search.trim()}”.</p>
-      <button class="btn" onclick={() => (search = "")}>Clear search</button>
+      <p>Не знайдено жодної серії за запитом «{search.trim()}».</p>
+      <button class="btn" onclick={() => (search = "")}>Очистити пошук</button>
     </div>
   {/if}
 
   {#if filtered.length > PAGE_SIZE}
     <div class="list-footer">
-      <span>Page {currentPage} of {pageCount}</span>
+      <span>Сторінка {currentPage} з {pageCount}</span>
       {@render pagination(true)}
     </div>
   {/if}
