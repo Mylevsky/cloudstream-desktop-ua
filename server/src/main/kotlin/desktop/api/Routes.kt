@@ -464,6 +464,18 @@ fun Route.apiRoutes(s: Services) {
                 call.respond(mapOf("ok" to true))
             }
         }
+        route("/storage") {
+            get("/status") {
+                call.respond(s.downloads.storageStatus())
+            }
+            post("/jellyfin/test") {
+                val req = call.receive<JellyfinTestRequest>()
+                call.respond(s.downloads.testJellyfin(req.url, req.apiKey))
+            }
+            post("/jellyfin/refresh") {
+                call.respond(s.downloads.triggerJellyfinRefresh())
+            }
+        }
     }
 }
 

@@ -433,6 +433,8 @@ data class DownloadRequest(
     val episode: Int? = 1,
     val episodeName: String? = null,
     val data: String,
+    val quality: Int? = null,
+    val downloadSubtitles: Boolean = true,
 )
 
 @Serializable
@@ -440,6 +442,8 @@ data class SeasonDownloadRequest(
     val provider: String,
     val url: String,
     val season: Int,
+    val quality: Int? = null,
+    val downloadSubtitles: Boolean = true,
 )
 
 @Serializable
@@ -457,5 +461,34 @@ data class DownloadTaskDto(
     val filePath: String? = null,
     val error: String? = null,
     val addedAt: Long = 0L,
+)
+
+@Serializable
+data class StorageStatusDto(
+    val moviesPath: String,
+    val showsPath: String,
+    val moviesDirExists: Boolean,
+    val showsDirExists: Boolean,
+    val totalSpaceBytes: Long,
+    val freeSpaceBytes: Long,
+    val usableSpaceBytes: Long,
+    val jellyfinUrl: String,
+    val jellyfinApiKeyConfigured: Boolean,
+    val jellyfinAutoRefresh: Boolean,
+    val preferredQuality: String,
+)
+
+@Serializable
+data class JellyfinTestRequest(
+    val url: String,
+    val apiKey: String,
+)
+
+@Serializable
+data class JellyfinTestResult(
+    val ok: Boolean,
+    val serverName: String? = null,
+    val version: String? = null,
+    val error: String? = null,
 )
 

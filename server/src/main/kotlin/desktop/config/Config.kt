@@ -51,6 +51,13 @@ data class Config(
                 Settings.PLUGIN_REPO_URLS to ((t["plugins.repo_urls"] as? List<*>)?.map { it.toString() }?.takeIf { it.isNotEmpty() }
                     ?: listOf(str("plugins.repo_url") ?: DEFAULT_REPO_URL)),
                 Settings.CHROMIUM_MODE to (str("chromium.mode")?.takeIf { it in Settings.choices.getValue(Settings.CHROMIUM_MODE) } ?: "headless"),
+                Settings.MOVIES_PATH to (str("storage.movies_path") ?: System.getenv("MOVIES_PATH") ?: "/data/Media/Movies"),
+                Settings.SHOWS_PATH to (str("storage.shows_path") ?: System.getenv("SHOWS_PATH") ?: "/data/Media/Shows"),
+                Settings.JELLYFIN_URL to (str("storage.jellyfin_url") ?: System.getenv("JELLYFIN_URL") ?: ""),
+                Settings.JELLYFIN_API_KEY to (str("storage.jellyfin_api_key") ?: System.getenv("JELLYFIN_API_KEY") ?: ""),
+                Settings.JELLYFIN_AUTO_REFRESH to (bool("storage.jellyfin_auto_refresh") ?: true),
+                Settings.PREFERRED_DOWNLOAD_QUALITY to (str("storage.preferred_download_quality")?.takeIf { it in Settings.choices.getValue(Settings.PREFERRED_DOWNLOAD_QUALITY) } ?: "best"),
+                Settings.DOWNLOAD_SUBTITLES to (bool("storage.download_subtitles") ?: true),
             )
             return Config(
                 bindHost = host,

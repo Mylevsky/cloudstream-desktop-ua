@@ -361,6 +361,13 @@ export interface Settings {
   chromium_mode: BrowserMode;
   plugin_source: PluginSourceMode;
   plugin_repo_urls: string[];
+  movies_path?: string;
+  shows_path?: string;
+  jellyfin_url?: string;
+  jellyfin_api_key?: string;
+  jellyfin_auto_refresh?: boolean;
+  preferred_download_quality?: string;
+  download_subtitles?: boolean;
 }
 
 export interface SourceProfile {
@@ -455,12 +462,16 @@ export interface DownloadRequest {
   episode?: number | null;
   episodeName?: string | null;
   data: string;
+  quality?: number | null;
+  downloadSubtitles?: boolean;
 }
 
 export interface SeasonDownloadRequest {
   provider: string;
   url: string;
   season: number;
+  quality?: number | null;
+  downloadSubtitles?: boolean;
 }
 
 export interface DownloadTask {
@@ -477,4 +488,25 @@ export interface DownloadTask {
   filePath?: string | null;
   error?: string | null;
   addedAt: number;
+}
+
+export interface StorageStatus {
+  moviesPath: string;
+  showsPath: string;
+  moviesDirExists: boolean;
+  showsDirExists: boolean;
+  totalSpaceBytes: number;
+  freeSpaceBytes: number;
+  usableSpaceBytes: number;
+  jellyfinUrl: string;
+  jellyfinApiKeyConfigured: boolean;
+  jellyfinAutoRefresh: boolean;
+  preferredQuality: string;
+}
+
+export interface JellyfinTestResult {
+  ok: boolean;
+  serverName?: string;
+  version?: string;
+  error?: string;
 }

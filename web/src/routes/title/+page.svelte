@@ -103,7 +103,7 @@
         kind: "movie",
         data: det.movieData,
       });
-      toasts.show(`Added "${det.name}" to Downloads 📥`);
+      toasts.show(`Додано "${det.name}" до завантажень 📥`);
     } catch (e) {
       toasts.error(e);
     }
@@ -121,7 +121,7 @@
         episodeName: ep.name,
         data: ep.data,
       });
-      toasts.show(`Added S${ep.season ?? 1}E${ep.episode ?? 1} to Downloads 📥`);
+      toasts.show(`Додано S${ep.season ?? 1}E${ep.episode ?? 1} до завантажень 📥`);
     } catch (e) {
       toasts.error(e);
     }
@@ -134,7 +134,7 @@
         url: det.url,
         season: seasonNum,
       });
-      toasts.show(`Queued Season ${seasonNum} (${res.length} episodes) for download 📥`);
+      toasts.show(`Сезон ${seasonNum} (${res.length} серій) додано до завантажень 📥`);
     } catch (e) {
       toasts.error(e);
     }

@@ -23,8 +23,10 @@ import type {
   Settings,
   SkipRange,
   Status,
+  StorageStatus,
   Stream,
   Subtitle,
+  JellyfinTestResult,
 } from "./types";
 import { content } from "./nsfw.svelte";
 
@@ -229,6 +231,10 @@ export const api = {
   cancelDownload: (id: string) =>
     post<{ ok: boolean }>(`/api/downloads/${encodeURIComponent(id)}/cancel`),
   clearCompletedDownloads: () => request<{ ok: boolean }>("DELETE", "/api/downloads/tasks"),
+  getStorageStatus: () => get<StorageStatus>("/api/storage/status"),
+  testJellyfin: (req: { url: string; apiKey: string }) =>
+    post<JellyfinTestResult>("/api/storage/jellyfin/test", req),
+  refreshJellyfin: () => post<{ ok: boolean; error?: string }>("/api/storage/jellyfin/refresh", {}),
 };
 
 /** Streams search results provider by provider. Returns a function that stops the stream. */

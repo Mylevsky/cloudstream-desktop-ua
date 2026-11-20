@@ -24,6 +24,24 @@
     refetchInterval: 2000,
   }));
 
+  const storageQuery = createQuery(() => ({
+    queryKey: ["storage-status"],
+    queryFn: api.getStorageStatus,
+    refetchInterval: 15000,
+  }));
+
+  function formatBytes(bytes?: number): string {
+    if (!bytes || bytes <= 0) return "0 GB";
+    const units = ["Б", "КБ", "МБ", "ГБ", "ТБ", "ПБ"];
+    let val = bytes;
+    let idx = 0;
+    while (val >= 1024 && idx < units.length - 1) {
+      val /= 1024;
+      idx++;
+    }
+    return `${val.toFixed(1)} ${units[idx]}`;
+  }
+
   const tasks = $derived(tasksQuery.data ?? []);
   const activeCount = $derived(
     tasks.filter(
@@ -80,6 +98,17 @@
     </div>
 
     <div class="header-actions">
+      {#if storageQuery.data}
+        <a
+          class="storage-pill"
+          href="/settings#settings-storage"
+          title="Сховище: {storageQuery.data.moviesPath}"
+        >
+          <HardDrive size={15} strokeWidth={2} aria-hidden="true" />
+          <span>{formatBytes(storageQuery.data.usableSpaceBytes)} вільно</span>
+        </a>
+      {/if}
+
       {#if tasks.some((t) => t.status === "completed" || t.status === "failed" || t.status === "cancelled")}
         <button
           class="btn secondary"
@@ -240,6 +269,27 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
+  }
+  .storage-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-size: 12.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      background 150ms,
+      border-color 150ms;
+  }
+  .storage-pill:hover {
+    background: var(--surface-2);
+    border-color: var(--accent);
   }
   .btn {
     display: inline-flex;

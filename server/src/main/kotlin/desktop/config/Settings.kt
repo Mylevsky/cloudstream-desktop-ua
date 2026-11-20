@@ -131,11 +131,20 @@ class Settings(private val db: Database, private val defaults: Map<String, Any>)
         /** Pre-list setting; still read when [PLUGIN_REPO_URLS] was never saved. */
         const val PLUGIN_REPO_URL = "plugin_repo_url"
 
+        const val MOVIES_PATH = "movies_path"
+        const val SHOWS_PATH = "shows_path"
+        const val JELLYFIN_URL = "jellyfin_url"
+        const val JELLYFIN_API_KEY = "jellyfin_api_key"
+        const val JELLYFIN_AUTO_REFRESH = "jellyfin_auto_refresh"
+        const val PREFERRED_DOWNLOAD_QUALITY = "preferred_download_quality"
+        const val DOWNLOAD_SUBTITLES = "download_subtitles"
+
         /** The allowed values of string settings that have a fixed set. */
         val choices = mapOf(
             CHROMIUM_MODE to setOf("headless", "xvfb", "headed"),
             PLUGIN_SOURCE to setOf("dev", "repo"),
             SKIP_SEGMENTS to setOf("prompt", "auto", "off"),
+            PREFERRED_DOWNLOAD_QUALITY to setOf("best", "1080", "720", "480"),
         )
 
         /** Settings only the desktop (loopback) may change: they decide what code the server runs. (Paired devices manage the repo list.) */

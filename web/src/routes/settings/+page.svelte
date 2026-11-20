@@ -19,12 +19,14 @@
   } from "#lib/types";
   import {
     Check,
+    CheckCircle2,
     CircleAlert,
     ChevronDown,
     ChevronRight,
     ArrowLeft,
     Trash2,
     Globe,
+    HardDrive,
     Layers,
     ListOrdered,
     Play,
@@ -69,6 +71,7 @@
   const categories = [
     { id: "playback", label: "Відтворення", icon: Play },
     { id: "priority", label: "Пріоритет джерел", icon: ListOrdered },
+    { id: "storage", label: "Сховище та Jellyfin", icon: HardDrive },
     { id: "content", label: "Контент", icon: Shield },
     { id: "browser", label: "Браузер", icon: Globe },
     { id: "plugins", label: "Плагіни", icon: Layers },
@@ -79,6 +82,72 @@
     availableCategories.find((category) => `#settings-${category.id}` === page.url.hash)?.id ??
       "playback",
   );
+
+  const storageQuery = createQuery(() => ({
+    queryKey: ["storage-status"],
+    queryFn: api.getStorageStatus,
+    refetchInterval: 10000,
+  }));
+
+  let isTestingJellyfin = $state(false);
+  let jellyfinTestResult = $state<{
+    ok: boolean;
+    serverName?: string;
+    version?: string;
+    error?: string;
+  } | null>(null);
+  let isRefreshingJellyfin = $state(false);
+
+  function formatBytes(bytes?: number): string {
+    if (!bytes || bytes <= 0) return "0 GB";
+    const units = ["Б", "КБ", "МБ", "ГБ", "ТБ", "ПБ"];
+    let val = bytes;
+    let idx = 0;
+    while (val >= 1024 && idx < units.length - 1) {
+      val /= 1024;
+      idx++;
+    }
+    return `${val.toFixed(1)} ${units[idx]}`;
+  }
+
+  async function testJellyfinConnection(url?: string, apiKey?: string) {
+    if (!url || !apiKey) {
+      toasts.show("Вкажіть URL та API-ключ Jellyfin для перевірки");
+      return;
+    }
+    isTestingJellyfin = true;
+    jellyfinTestResult = null;
+    try {
+      const res = await api.testJellyfin({ url, apiKey });
+      jellyfinTestResult = res;
+      if (res.ok) {
+        toasts.show(`Підключено до Jellyfin (${res.serverName ?? "OK"})`);
+      } else {
+        toasts.error(res.error ?? "Помилка підключення до Jellyfin");
+      }
+    } catch (e) {
+      toasts.error(e);
+      jellyfinTestResult = { ok: false, error: String(e) };
+    } finally {
+      isTestingJellyfin = false;
+    }
+  }
+
+  async function triggerJellyfinLibraryRefresh() {
+    isRefreshingJellyfin = true;
+    try {
+      const res = await api.refreshJellyfin();
+      if (res.ok) {
+        toasts.show("Запит на оновлення бібліотеки надіслано в Jellyfin 🚀");
+      } else {
+        toasts.error(res.error ?? "Помилка оновлення Jellyfin");
+      }
+    } catch (e) {
+      toasts.error(e);
+    } finally {
+      isRefreshingJellyfin = false;
+    }
+  }
   let pendingSaves = $state(0);
   let saveState = $state<"idle" | "saved" | "error">("idle");
   let saveFailed = false;
@@ -741,6 +810,248 @@
           <SourceProfiles settings={s} />
         </section>
 
+        <section hidden={activeCategory !== "storage"} aria-labelledby="storage-heading">
+          <div class="section-heading">
+            <h2 id="storage-heading">Сховище та Jellyfin</h2>
+            <p>Керуйте дисковим простором для завантажень Proxmox та синхронізацією з Jellyfin.</p>
+          </div>
+
+          {#if storageQuery.data}
+            {@const st = storageQuery.data}
+            {@const totalBytes = st.totalSpaceBytes || 1}
+            {@const usableBytes = st.usableSpaceBytes || 0}
+            {@const usedBytes = Math.max(0, totalBytes - usableBytes)}
+            {@const usedPercent = Math.min(
+              100,
+              Math.max(0, Math.round((usedBytes / totalBytes) * 100)),
+            )}
+
+            <div class="storage-card">
+              <div class="storage-card-header">
+                <div class="storage-card-title">
+                  <HardDrive size={20} strokeWidth={2} aria-hidden="true" />
+                  <span>Підключений диск Proxmox</span>
+                </div>
+                <div class="storage-card-stats">
+                  <b>{formatBytes(usableBytes)} вільно</b>
+                  <span class="muted"
+                    >з {formatBytes(totalBytes)} ({100 - usedPercent}% вільно)</span
+                  >
+                </div>
+              </div>
+
+              <div class="disk-meter-track">
+                <div
+                  class="disk-meter-fill {usedPercent > 90
+                    ? 'critical'
+                    : usedPercent > 75
+                      ? 'warning'
+                      : 'ok'}"
+                  style:width="{usedPercent}%"
+                ></div>
+              </div>
+
+              <div class="storage-paths-status">
+                <div class="path-status-item">
+                  <span class="path-label">Фільми:</span>
+                  <code>{st.moviesPath}</code>
+                  {#if st.moviesDirExists}
+                    <span class="status-badge ok"
+                      ><Check size={12} strokeWidth={2.5} /> Доступно</span
+                    >
+                  {:else}
+                    <span class="status-badge warn"
+                      ><CircleAlert size={12} strokeWidth={2.5} /> Створиться автоматично</span
+                    >
+                  {/if}
+                </div>
+                <div class="path-status-item">
+                  <span class="path-label">Серіали:</span>
+                  <code>{st.showsPath}</code>
+                  {#if st.showsDirExists}
+                    <span class="status-badge ok"
+                      ><Check size={12} strokeWidth={2.5} /> Доступно</span
+                    >
+                  {:else}
+                    <span class="status-badge warn"
+                      ><CircleAlert size={12} strokeWidth={2.5} /> Створиться автоматично</span
+                    >
+                  {/if}
+                </div>
+              </div>
+            </div>
+          {/if}
+
+          <h3>Папки збереження на диску</h3>
+          <div class="setting-row">
+            <span class="setting-copy">
+              <b>Шлях до фільмів</b>
+              <small class="muted"
+                >Директорія, куди зберігаються завантажені фільми (наприклад, <code
+                  >/data/Media/Movies</code
+                >).</small
+              >
+            </span>
+            <input
+              type="text"
+              class="setting-input"
+              value={s.movies_path ?? "/data/Media/Movies"}
+              placeholder="/data/Media/Movies"
+              onchange={(e) => save({ movies_path: e.currentTarget.value.trim() })}
+            />
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-copy">
+              <b>Шлях до серіалів</b>
+              <small class="muted"
+                >Директорія, куди зберігаються завантажені сезони та серії (наприклад, <code
+                  >/data/Media/Shows</code
+                >).</small
+              >
+            </span>
+            <input
+              type="text"
+              class="setting-input"
+              value={s.shows_path ?? "/data/Media/Shows"}
+              placeholder="/data/Media/Shows"
+              onchange={(e) => save({ shows_path: e.currentTarget.value.trim() })}
+            />
+          </div>
+
+          <h3>Параметри завантаження</h3>
+          <label class="setting-row">
+            <span class="setting-copy">
+              <b>Бажана якість завантаження</b>
+              <small class="muted"
+                >Якість відео, якій надаватиметься пріоритет під час завантаження фільму чи сезону.</small
+              >
+            </span>
+            <select
+              value={s.preferred_download_quality ?? "best"}
+              onchange={(e) => save({ preferred_download_quality: e.currentTarget.value })}
+            >
+              <option value="best">Найкраща доступна (Original / 1080p+)</option>
+              <option value="1080">1080p Full HD</option>
+              <option value="720">720p HD</option>
+              <option value="480">480p SD (економія місця)</option>
+            </select>
+          </label>
+
+          <label class="toggle">
+            <span>
+              <b>Завантажувати українські субтитри</b>
+              <small
+                >Автоматично зберігати виявлені субтитри поруч із відеофайлом для Jellyfin.</small
+              >
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={s.download_subtitles ?? true}
+              onchange={(e) => save({ download_subtitles: e.currentTarget.checked })}
+            />
+          </label>
+
+          <h3>Інтеграція з медіасервером Jellyfin</h3>
+          <p class="muted">
+            Налаштуйте з'єднання з Jellyfin, щоб медіатека автоматично оновлювалася одразу після
+            того, як фільм або сезон завантажиться на диск.
+          </p>
+
+          <div class="setting-row">
+            <span class="setting-copy">
+              <b>URL сервера Jellyfin</b>
+              <small class="muted"
+                >Локальна адреса сервера (наприклад, <code>http://192.168.0.10:8096</code>).</small
+              >
+            </span>
+            <input
+              type="url"
+              class="setting-input"
+              value={s.jellyfin_url ?? ""}
+              placeholder="http://192.168.0.x:8096"
+              onchange={(e) => save({ jellyfin_url: e.currentTarget.value.trim() })}
+            />
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-copy">
+              <b>API-ключ Jellyfin</b>
+              <small class="muted"
+                >Створіть у Jellyfin: <i>Панель керування → Розширені → Ключі API</i>.</small
+              >
+            </span>
+            <input
+              type="password"
+              class="setting-input"
+              value={s.jellyfin_api_key ?? ""}
+              placeholder="Вставте API-ключ Jellyfin"
+              onchange={(e) => save({ jellyfin_api_key: e.currentTarget.value.trim() })}
+            />
+          </div>
+
+          <label class="toggle">
+            <span>
+              <b>Автоматично оновлювати бібліотеку Jellyfin</b>
+              <small
+                >Надсилати сигнал сканування <code>/Library/Refresh</code> одразу після завершення кожного
+                завантаження.</small
+              >
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={s.jellyfin_auto_refresh ?? true}
+              onchange={(e) => save({ jellyfin_auto_refresh: e.currentTarget.checked })}
+            />
+          </label>
+
+          <div class="jellyfin-actions">
+            <button
+              class="btn secondary"
+              disabled={isTestingJellyfin || !s.jellyfin_url || !s.jellyfin_api_key}
+              onclick={() => testJellyfinConnection(s.jellyfin_url, s.jellyfin_api_key)}
+            >
+              {#if isTestingJellyfin}
+                <RefreshCw size={16} class="spin" />
+                <span>Перевірка…</span>
+              {:else}
+                <CheckCircle2 size={16} />
+                <span>Перевірити підключення</span>
+              {/if}
+            </button>
+
+            <button
+              class="btn secondary"
+              disabled={isRefreshingJellyfin || !s.jellyfin_url || !s.jellyfin_api_key}
+              onclick={triggerJellyfinLibraryRefresh}
+            >
+              {#if isRefreshingJellyfin}
+                <RefreshCw size={16} class="spin" />
+                <span>Оновлення…</span>
+              {:else}
+                <RefreshCw size={16} />
+                <span>Оновити бібліотеку Jellyfin зараз</span>
+              {/if}
+            </button>
+          </div>
+
+          {#if jellyfinTestResult}
+            <div class="jellyfin-test-box {jellyfinTestResult.ok ? 'ok' : 'error'}">
+              {#if jellyfinTestResult.ok}
+                <Check size={16} strokeWidth={2.5} />
+                <span
+                  >З'єднання успішне! Сервер: <b>{jellyfinTestResult.serverName}</b> (версія {jellyfinTestResult.version})</span
+                >
+              {:else}
+                <CircleAlert size={16} strokeWidth={2.5} />
+                <span>Помилка підключення: {jellyfinTestResult.error}</span>
+              {/if}
+            </div>
+          {/if}
+        </section>
+
         <section hidden={activeCategory !== "content"} aria-labelledby="content-heading">
           <div class="section-heading">
             <h2 id="content-heading">Контент</h2>
@@ -1360,6 +1671,138 @@
   }
   .setting-row select {
     width: 100%;
+  }
+  .setting-input {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .setting-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .storage-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .storage-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .storage-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .storage-card-stats {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 14px;
+  }
+  .disk-meter-track {
+    width: 100%;
+    height: 10px;
+    background: var(--line);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .disk-meter-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.4s ease;
+  }
+  .disk-meter-fill.ok {
+    background: #10b981;
+  }
+  .disk-meter-fill.warning {
+    background: #f59e0b;
+  }
+  .disk-meter-fill.critical {
+    background: #ef4444;
+  }
+  .storage-paths-status {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .path-status-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .path-label {
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .path-status-item code {
+    background: var(--bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+  }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+  .status-badge.ok {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+  }
+  .status-badge.warn {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+  }
+  .jellyfin-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .jellyfin-test-box {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+  }
+  .jellyfin-test-box.ok {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+  }
+  .jellyfin-test-box.error {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
   }
   .advanced {
     margin-top: 12px;

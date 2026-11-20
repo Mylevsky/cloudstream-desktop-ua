@@ -63,7 +63,7 @@ fun serve(config: Config, db: Database, settings: Settings, host: PluginHost, sc
         override suspend fun command(cmd: String, body: PlayerCommand) = playback.command(cmd, body)
     })
     val clientStreams = ClientStreams(links, proxy)
-    val downloads = desktop.download.DownloadService(scope, catalog, links, clientStreams, config.bindPort)
+    val downloads = desktop.download.DownloadService(scope, catalog, links, clientStreams, settings, config.bindPort)
     val services = Services(host, catalog, links, proxy, playback, store, settings, auth, scope, config.bindPort, config.devPath,
         clientStreams, skipTimes, cast, downloads)
 
